@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   Dimensions,
@@ -15,14 +15,16 @@ import {
   ImageBackground,
 } from 'react-native';
 import Video from 'react-native-video';
-import {ProgressBar, PlayerControls} from '../../Components/Video';
+import { ProgressBar, PlayerControls } from '../../Components/Video';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {useFocusEffect, useNavigation, useRoute} from '@react-navigation/core';
-import {useDispatch, useSelector} from 'react-redux';
-import {COLORS, FONT, GAP, HEIGHT, WIDTH} from '../../Utils/constants';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/core';
+import { useDispatch, useSelector } from 'react-redux';
+import { COLORS, FONT, GAP, HEIGHT, WIDTH } from '../../Utils/constants';
 import Feather from 'react-native-vector-icons/Feather';
 import { videosaction } from '../../Redux/Actions/videoaction';
-
+import RBSheet from "react-native-raw-bottom-sheet";
+import PlanBottomsheet from '../../Components/PlanBottomsheet';
+import PlanBottomsheet2 from '../../Components/PlanBottomsheet2';
 
 const Player = () => {
   const route = useRoute();
@@ -30,6 +32,7 @@ const Player = () => {
   const dispatch = useDispatch();
   const video = useSelector(state => state.videodata)
   const videoRef = React.createRef();
+  const refRBSheet = useRef();
   const [state, setState] = useState({
     fullscreen: false,
     play: false,
@@ -66,7 +69,7 @@ const Player = () => {
             name="chevron-left"
             size={30}
             color={'white'}
-            style={{marginLeft: WIDTH * 0.04}}
+            style={{ marginLeft: WIDTH * 0.04 }}
           />
         </TouchableOpacity>
       ),
@@ -77,7 +80,7 @@ const Player = () => {
   return (
     <View style={styles.container}>
       <TouchableWithoutFeedback onPress={showControls}>
-        <View>
+        <View  >
           <Video
             ref={videoRef}
             source={{
@@ -100,7 +103,7 @@ const Player = () => {
               bufferForPlaybackMs: 2500,
               bufferForPlaybackAfterRebufferMs: 5000
             }}
-            onBuffer={()=> setIsLoading(true)}
+            onBuffer={() => setIsLoading(true)}
           />
           {state.showControls && (
             <View style={styles.controlOverlay}>
@@ -112,7 +115,7 @@ const Player = () => {
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}>
-                  <ActivityIndicator size={"large"} color="#fff"  />
+                  <ActivityIndicator size={"large"} color="#fff" />
                 </View>
               ) : (
                 <>
@@ -148,7 +151,7 @@ const Player = () => {
                     skipBackwards={skipBackward}
                     skipForwards={skipForward}
                   />
-                  
+
                   <ProgressBar
                     currentTime={state.currentTime}
                     duration={state.duration > 0 ? state.duration : 0}
@@ -162,7 +165,7 @@ const Player = () => {
           )}
         </View>
       </TouchableWithoutFeedback>
-      <View style={{paddingVertical:15}}>
+      <View style={{ paddingVertical: 15, flex: 6 }}>
         <ScrollView>
           <Text
             style={{
@@ -191,39 +194,71 @@ const Player = () => {
             }}>
             {route?.params?.description}
           </Text>
+          <TouchableOpacity onPress={() => refRBSheet.current.open()}>
+            <Text style={{ color: 'red', fontSize: 20 }} >BottomSheet</Text>
+          </TouchableOpacity>
+
+
+
+          {/* BottomSheet */}
+
+          <RBSheet
+            ref={refRBSheet}
+            closeOnDragDown={true}
+            closeOnPressMask={false}
+            height={Dimensions.get('window').height * 0.70}
+            customStyles={{
+              wrapper: {
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              },
+              draggableIcon: {
+                backgroundColor: "#000"
+              },
+              container: {
+                backgroundColor: 'red',
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20,
+              }
+            }}
+          >
+            <PlanBottomsheet
+              planPage={() => navigation.navigate('PlanPage')}
+            />
+          </RBSheet>
+
         </ScrollView>
       </View>
     </View>
   );
 
   function handleFullscreen() {
-    setState((s) => ({...s, fullscreen: !state.fullscreen}));
+    setState((s) => ({ ...s, fullscreen: !state.fullscreen }));
   }
 
   function handlePlayPause() {
     // If playing, pause and show controls immediately.
     if (state.play) {
-      setState({...state, play: false, showControls: true});
+      setState({ ...state, play: false, showControls: true });
       return;
     }
     // SaveTrack()
-    setState({...state, play: true});
+    setState({ ...state, play: true });
     // setTimeout(() => setState((s) => ({...s, showControls: false})), 2000);
   }
 
   function skipBackward() {
     videoRef.current.seek(state.currentTime - 15);
-    setState({...state, currentTime: state.currentTime - 15});
+    setState({ ...state, currentTime: state.currentTime - 15 });
   }
 
   function skipForward() {
     videoRef.current.seek(state.currentTime + 15);
-    setState({...state, currentTime: state.currentTime + 15});
+    setState({ ...state, currentTime: state.currentTime + 15 });
   }
 
   function onSeek(data) {
     videoRef?.current.seek(data.seekTime);
-    setState({...state, currentTime: data.seekTime});
+    setState({ ...state, currentTime: data.seekTime });
   }
 
   async function onLoadEnd(data) {
@@ -246,15 +281,15 @@ const Player = () => {
   }
 
   function onEnd() {
-    video.map((item, index)=>{
-      if(item._id == route.params.trackID){
-       item.watched = true
+    video.map((item, index) => {
+      if (item._id == route.params.trackID) {
+        item.watched = true
       }
     })
     dispatch(videosaction(video))
     videoRef.current.seek(0);
     console.log("video", video);
-    setState({...state, play: false});
+    setState({ ...state, play: false });
   }
 
 
@@ -262,8 +297,8 @@ const Player = () => {
 
   function showControls() {
     state.showControls
-      ? setState({...state, showControls: false})
-      : setState({...state, showControls: true});
+      ? setState({ ...state, showControls: false })
+      : setState({ ...state, showControls: true });
   }
 };
 
@@ -278,7 +313,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
   },
   fullscreenVideo: {
-    height: 300,
+    height: Dimensions.get('window').height * 0.30,
     width: Dimensions.get('window').width,
     backgroundColor: 'black',
   },
