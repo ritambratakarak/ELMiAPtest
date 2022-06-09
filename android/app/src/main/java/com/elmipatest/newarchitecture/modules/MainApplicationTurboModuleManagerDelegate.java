@@ -1,4 +1,4 @@
-package com.elmipatest.newarchitecture.modules;
+package com.elmiaptest.application.newarchitecture.modules;
 
 import com.facebook.jni.HybridData;
 import com.facebook.react.ReactPackage;

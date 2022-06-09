@@ -1,4 +1,4 @@
-package com.elmipatest;
+package com.elmiaptest.application;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;

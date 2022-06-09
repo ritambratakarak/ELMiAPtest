@@ -11,6 +11,7 @@ import {
   TextInput,
   FlatList,
   ImageBackground,
+  Alert
 } from 'react-native';
 import {HEIGHT, GAP, COLORS, WIDTH, FONT} from '../../Utils/constants';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
@@ -19,15 +20,11 @@ import media from '../../Utils/media.json';
 import HomeList from '../../Components/Home/VideoList';
 import {videosaction} from '../../Redux/Actions/videoaction';
 
-
-
-
-const Home = (props) => {
+const Home = props => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const [data, setData] = useState([]);
-  const state = useSelector((state) => state.videodata);
-  console.log(state);
+  const state = useSelector(state => state.videodata);
   const [datatrue, setdatatue] = useState(false);
 
   useEffect(() => {
@@ -36,12 +33,27 @@ const Home = (props) => {
     } else {
       setData(state);
     }
+    navigation.setOptions({
+      headerRight: () => {
+        return (
+          <TouchableOpacity onPress={()=> navigation.navigate("Subscription")}>
+            <Text
+              style={{
+                color: COLORS.SECONDARY,
+                fontSize: 15,
+                textTransform: 'uppercase',
+                paddingHorizontal: 15,
+              }}>
+              Subscription
+            </Text>
+          </TouchableOpacity>
+        );
+      },
+    });
   }, [state]);
 
-  
-
   const renderItem = useCallback(
-    ({item, extraData: data }) => (
+    ({item, extraData: data}) => (
       <HomeList
         name={item.title}
         img={item.banner}
@@ -50,13 +62,24 @@ const Home = (props) => {
         author={item.subtitle}
         watched={item.watched}
         onPress={() => {
-          navigation.navigate('Player', {
-            url: item.sources[0],
-            trackID: item._id,
-            name: item.title,
-            subtitle: item.subtitle,
-            description: item.description,
-          });
+          Alert.alert(
+            "Alert",
+            "Do you want to subscribe?",
+            [
+              {
+                text: "Subscription",
+                onPress: () => navigation.navigate("Subscription"),
+                style: "cancel"
+              },
+              { text: "PLAY", onPress: () => navigation.navigate('Player', {
+                url: item.sources[0],
+                trackID: item._id,
+                name: item.title,
+                subtitle: item.subtitle,
+                description: item.description,
+              })}
+            ]
+          );
         }}
       />
     ),
@@ -72,7 +95,7 @@ const Home = (props) => {
             horizontal={false}
             data={data}
             renderItem={renderItem}
-            keyExtractor={(item) => item._id}
+            keyExtractor={item => item._id}
             numColumns={2}
             extraData={data}
             ListEmptyComponent={

@@ -1,4 +1,4 @@
-package com.elmipatest.newarchitecture.components;
+package com.elmiaptest.application.newarchitecture.components;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;
