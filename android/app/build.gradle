@@ -230,10 +230,10 @@ android {
             keyPassword 'android'
         }
         release {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            storeFile file('elm_iap_test.keystore')
+            storePassword 'kredentinfoedge@elm987'
+            keyAlias 'elm_iap_test'
+            keyPassword 'kredentinfoedge@elm987'
         }
     }
     buildTypes {
