@@ -11,139 +11,79 @@ import {
   TextInput,
   FlatList,
   ImageBackground,
+  Button,
 } from 'react-native';
 import {HEIGHT, GAP, COLORS, WIDTH, FONT} from '../../Utils/constants';
-import {useDispatch, useSelector} from 'react-redux';
-import * as RNIap from 'react-native-iap';
+import IAP from 'react-native-iap';
 
 const itemSubs = Platform.select({
-  ios: ['49', '109', '199'],
-  android: ['49', '109', '199'],
+  ios: [],
+  android: [
+    'elm_monthly_test_autorenew_subscription',
+    'elm_quarter_test_autorenew_subscription',
+    'elm_yearly_test_autorenew_subscription',
+  ],
 });
 
-
 const Subscription = props => {
-  const state = useSelector(state => state.videodata);
-  const [loadingText, setLoadingText] = useState('Loading...');
+  const [products, setProducts] = useState({});
+  const [purchased, setPurchased] = useState(false);
 
   useEffect(() => {
-    checkForSubscription();
+    IAP.initConnection()
+      .catch(() => {
+        console.log('error connecting to store...');
+      })
+      .then(() => {
+        IAP.getSubscriptions(itemSubs)
+          .catch(() => {
+            console.log('error finding items');
+          })
+          .then(res => {
+            alert(JSON.stringify(res));
+            setProducts(res);
+          });
+        IAP.getPurchaseHistory()
+          .catch(() => {})
+          .then(res => {
+            try {
+              const receipt = res[res.length - 1].transactionReceipt;
+              if (receipt) {
+                alert(JSON.stringify(receipt));
+                setPurchased(true);
+              }
+            } catch (error) {}
+          });
+      });
   }, []);
-
-  const checkForSubscription = async () => {
-    try {
-      setLoadingText('Please wait...')
-      await RNIap.initConnection();
-      const products = await RNIap.getSubscriptions(itemSubs);
-      const availableSubscription = await RNIap.getAvailablePurchases();
-      console.log('Available Products', JSON.stringify(products));
-      console.log(
-        'Current Subscription',
-       availableSubscription
-      );
-      //alert(JSON.stringify(availableSubscription), JSON.stringify(PurchaseHistoty))
-    } catch (err) {
-      console.log(err.code, err.message);
-    }
-  };
-
-  const customerData = [
-    {
-      price: '$49.99',
-      title: '3 months paid subscription',
-      buttonText: 'Buy',
-    },
-    {
-      price: '$109.99',
-      title: '6 months paid subscription',
-      buttonText: 'Buy',
-    },
-    {
-      price: '$199.99',
-      title: '1 year paid subscription',
-      buttonText: 'Buy',
-    },
-  ];
-
-
-
 
   return (
     <>
       <View style={styles.container}>
-        <View style={styles.repeatContainer}>
-          <FlatList
-            data={customerData}
-            keyExtractor={item => item.price}
-            renderItem={({item, index}) => (
-              <View
-                style={{
-                  Width: '90%',
-                  height: HEIGHT * 0.3,
-                  margin: 10,
-                  borderWidth: 1,
-                  borderColor: COLORS.DARKGRAY,
-                  borderRadius: 5,
-                  backgroundColor: COLORS.PRIMARY,
-                }}>
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                  }}>
-                  {
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={() => onSubcribePress()}>
-                      <View
-                        style={{
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: '100%',
-                          height: '100%',
-                        }}>
-                        <Text
-                          style={{
-                            fontSize: 20,
-                            fontWeight: 'bold',
-                            margin: 10,
-                            marginTop: -5,
-                          }}>
-                          Subscription plan
-                        </Text>
-                        <Text
-                          style={{
-                            color: COLORS.WHITE,
-                            fontSize: 22,
-                            marginTop: 6,
-                          }}>
-                          {item.price} / Year
-                        </Text>
-                        <View
-                          style={{
-                            width: '40%',
-                            backgroundColor: COLORS.WHITE,
-                            marginTop: 20,
-                            borderRadius: 8,
-                            alignItems: 'center',
-                          }}>
-                          <Text
-                            style={{
-                              color: COLORS.BLACK,
-                              fontSize: 16,
-                              padding: 10,
-                            }}>
-                            {item.buttonText}
-                          </Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  }
-                </View>
-              </View>
-            )}
-          />
-        </View>
+        {products.length > 0 ? (
+          <View style={styles.repeatContainer}>
+            {products.map(p => (
+              <Button
+                key={p['productId']}
+                title={`Purchase ${p['title']}`}
+                onPress={() => {
+                  console.log(p['productId']);
+                  IAP.requestSubscription(p['productId']);
+                }}
+              />
+            ))}
+          </View>
+        ) : (
+          <View style={styles.container}>
+            <Text>Fetching products please wait...</Text>
+          </View>
+        )}
+        {purchased &&
+          <View>
+            <Image source={require('../../Assets/tick.png')} style={{height: 100, width: 100}} />
+            <Text style={styles.title}>You are already subscribe to app</Text>
+          </View>
+        }
       </View>
     </>
   );
