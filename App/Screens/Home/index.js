@@ -11,7 +11,7 @@ import {
   TextInput,
   FlatList,
   ImageBackground,
-  Alert
+  Alert,
 } from 'react-native';
 import {HEIGHT, GAP, COLORS, WIDTH, FONT} from '../../Utils/constants';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
@@ -20,7 +20,6 @@ import media from '../../Utils/media.json';
 import HomeList from '../../Components/Home/VideoList';
 import {videosaction} from '../../Redux/Actions/videoaction';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 const Home = props => {
   const navigation = useNavigation();
@@ -38,7 +37,7 @@ const Home = props => {
     navigation.setOptions({
       headerRight: () => {
         return (
-          <TouchableOpacity onPress={()=> navigation.navigate("Subscription")}>
+          <TouchableOpacity onPress={() => navigation.navigate('Subscription')}>
             <Text
               style={{
                 color: COLORS.SECONDARY,
@@ -54,22 +53,28 @@ const Home = props => {
     });
   }, [state]);
 
-
-  const playvideo = async(item)=>{
+  const playvideo = async item => {
     const asyncedata = await AsyncStorage.getItem('purchase');
     console.log(asyncedata);
-    if(asyncedata !== null){
+    if (asyncedata !== null) {
       navigation.navigate('Player', {
         url: item.sources[0],
         trackID: item._id,
         name: item.title,
         subtitle: item.subtitle,
         description: item.description,
-      })
+      });
     } else {
-      navigation.navigate('Subscriptiom')
+      Alert.alert('', 'if you want to play this video. Please Subscribe!', [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('cancle'),
+          style: 'cancel',
+        },
+        {text: 'Ok', onPress: () => navigation.navigate('Subscription')},
+      ]);
     }
-  }
+  };
 
   const renderItem = useCallback(
     ({item, extraData: data}) => (
@@ -81,18 +86,7 @@ const Home = props => {
         author={item.subtitle}
         watched={item.watched}
         onPress={() => {
-          Alert.alert(
-            "Alert",
-            "Do you want to subscribe?",
-            [
-              {
-                text: "Cancel",
-                onPress: () => console.log('cancle'),
-                style: "cancel"
-              },
-              { text: "PLAY", onPress: () => playvideo(item)}
-            ]
-          );
+          playvideo(item);
         }}
       />
     ),
