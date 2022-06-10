@@ -19,6 +19,8 @@ import {useDispatch, useSelector} from 'react-redux';
 import media from '../../Utils/media.json';
 import HomeList from '../../Components/Home/VideoList';
 import {videosaction} from '../../Redux/Actions/videoaction';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const Home = props => {
   const navigation = useNavigation();
@@ -52,6 +54,23 @@ const Home = props => {
     });
   }, [state]);
 
+
+  const playvideo = async(item)=>{
+    const asyncedata = await AsyncStorage.getItem('purchase');
+    console.log(asyncedata);
+    if(asyncedata !== null){
+      navigation.navigate('Player', {
+        url: item.sources[0],
+        trackID: item._id,
+        name: item.title,
+        subtitle: item.subtitle,
+        description: item.description,
+      })
+    } else {
+      navigation.navigate('Subscriptiom')
+    }
+  }
+
   const renderItem = useCallback(
     ({item, extraData: data}) => (
       <HomeList
@@ -67,17 +86,11 @@ const Home = props => {
             "Do you want to subscribe?",
             [
               {
-                text: "Subscription",
-                onPress: () => navigation.navigate("Subscription"),
+                text: "Cancel",
+                onPress: () => console.log('cancle'),
                 style: "cancel"
               },
-              { text: "PLAY", onPress: () => navigation.navigate('Player', {
-                url: item.sources[0],
-                trackID: item._id,
-                name: item.title,
-                subtitle: item.subtitle,
-                description: item.description,
-              })}
+              { text: "PLAY", onPress: () => playvideo(item)}
             ]
           );
         }}

@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import {HEIGHT, GAP, COLORS, WIDTH, FONT} from '../../Utils/constants';
 import IAP from 'react-native-iap';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const itemSubs = Platform.select({
   ios: [],
@@ -45,12 +46,13 @@ const Subscription = props => {
           });
         IAP.getPurchaseHistory()
           .catch(() => {})
-          .then(res => {
+          .then(async res => {
             try {
               const receipt = res[res.length - 1].transactionReceipt;
               if (receipt) {
                 alert(JSON.stringify(receipt));
                 setPurchased(true);
+                await AsyncStorage.setItem('purchase', JSON.stringify(receipt))
               }
             } catch (error) {}
           });
