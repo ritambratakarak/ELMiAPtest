@@ -16,6 +16,7 @@ const itemSubs = Platform.select({
 const Subscription = props => {
   const [products, setProducts] = useState({});
   const [purchased, setPurchased] = useState(false);
+  const [purchaseddata, setPurchaseddata] = useState('');
 
   useEffect(() => {
     checkSubscription();
@@ -52,6 +53,7 @@ const Subscription = props => {
               const receipt = res[res.length - 1].transactionReceipt;
               if (receipt) {
                 setPurchased(true);
+                setPurchaseddata(receipt)
                 await AsyncStorage.setItem('purchase', JSON.stringify(receipt));
               }
             } catch (error) {}
@@ -64,37 +66,57 @@ const Subscription = props => {
     checkSubscription();
   };
 
-  if (products.length > 0) {
+  if (purchased) {
     return (
       <View style={styles.container}>
+        <View style={{justifyContent: 'center', alignSelf: 'center', flex: 1, alignItems:"center", }}>
+          <Image
+            source={require('../../Assets/tick.png')}
+            style={{height: 100, width: 100}}
+          />
+          <Text style={styles.title}>{purchaseddata?.productId == "elm_monthly_test_autorenew_subscription" ? "Monthly Subscription is active" : purchaseddata?.productId == "elm_quarter_test_autorenew_subscription" ? "Quaterly Subscription is active" : "Yearly Subscription is active"}</Text>
+          <Text style={styles.title}>You are already subscribe to app</Text>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {products.length > 0 ? (
         <View style={styles.repeatContainer}>
           {products.map(p => (
             <TouchableOpacity
               style={{
-                backgroundColor: 'blue',
-                width: '90%',
+                backgroundColor: '#1D458A',
+                width: '100%',
                 height: 200,
                 marginVertical: 15,
                 justifyContent: 'center',
                 alignItems: 'center',
+                borderRadius: 15,
               }}
+              key={p['productId']}
               onPress={() => subscriptionPress(p['productId'])}>
               <Text
-                style={{color: '#fff', fontSize: 15}}>{`${p['title']}`}</Text>
+                style={{color: '#fff', fontSize: 20}}>{`${p['title']}`}</Text>
               <Text
                 style={{
                   color: '#fff',
-                  fontSize: 15,
+                  fontSize: 18,
                 }}>{`Price: ${p['originalPrice']}`}</Text>
               <View
                 style={{
                   backgroundColor: '#fff',
-                  borderRadius: 20,
                   alignSelf: 'center',
-                  width: 30,
-                  height: 30,
+                  width: 80,
+                  height: 40,
+                  alignItems: 'center',
+                  borderRadius: 10,
+                  justifyContent: 'center',
+                  margin: 10,
                 }}>
-                <Text>Buy</Text>
+                <Text style={{fontSize: 18}}>Buy</Text>
               </View>
             </TouchableOpacity>
             // onPress={()=> subscriptionPress(p['productId'])}
@@ -108,25 +130,13 @@ const Subscription = props => {
             // />
           ))}
         </View>
-      </View>
-    );
-  } else {
-    <View style={styles.container}>
-      <Text>Fetching products please wait...</Text>
-    </View>;
-  }
-
-  if (purchased) {
-    return (
-      <View style={{justifyContent: 'center', alignSelf: 'center', flex: 1}}>
-        <Image
-          source={require('../../Assets/tick.png')}
-          style={{height: 100, width: 100}}
-        />
-        <Text style={styles.title}>You are already subscribe to app</Text>
-      </View>
-    );
-  }
+      ) : (
+        <View style={styles.container}>
+          <Text>Fetching products please wait...</Text>
+        </View>
+      )}
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -140,6 +150,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: HEIGHT * 0.04,
   },
+  title:{
+    fontSize:15,
+    fontWeight:'600',
+    paddingVertical:10
+  }
 });
 
 export default Subscription;
