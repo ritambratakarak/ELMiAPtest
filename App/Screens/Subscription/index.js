@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import {StyleSheet, Image, View, Text, TouchableOpacity} from 'react-native';
+import {StyleSheet, Image, View, Text, TouchableOpacity, Linking} from 'react-native';
 import {HEIGHT, GAP, COLORS, WIDTH, FONT} from '../../Utils/constants';
 import IAP from 'react-native-iap';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,6 +16,7 @@ const itemSubs = Platform.select({
 const Subscription = props => {
   const [products, setProducts] = useState({});
   const [purchased, setPurchased] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [purchaseddata, setPurchaseddata] = useState('');
 
   useEffect(() => {
@@ -33,6 +34,7 @@ const Subscription = props => {
         console.log('error connecting to store...');
       })
       .then(async () => {
+
         IAP.getSubscriptions(itemSubs)
           .catch(() => {
             console.log('error finding items');
@@ -40,21 +42,16 @@ const Subscription = props => {
           .then(res => {
             setProducts(res);
           });
-        await IAP.getAvailablePurchases().then(async res => {
-          try {
-            const receipt = res;
-            alert(JSON.stringify(receipt));
-          } catch (error) {}
-        });
         IAP.getPurchaseHistory()
-          .catch(() => {})
-          .then(async res => {
-            try {
-              const receipt = res[res.length - 1].transactionReceipt;
-              if (receipt) {
-                setPurchased(true);
+        .catch(() => {})
+        .then(async res => {
+          try {
+            const receipt = res[res.length - 1].transactionReceipt;
+            if (receipt) {
                 setPurchaseddata(receipt)
+                alert(JSON.stringify(receipt));
                 await AsyncStorage.setItem('purchase', JSON.stringify(receipt));
+                setPurchased(true);
               }
             } catch (error) {}
           });
@@ -66,6 +63,8 @@ const Subscription = props => {
     checkSubscription();
   };
 
+  
+
   if (purchased) {
     return (
       <View style={styles.container}>
@@ -74,8 +73,11 @@ const Subscription = props => {
             source={require('../../Assets/tick.png')}
             style={{height: 100, width: 100}}
           />
-          <Text style={styles.title}>{purchaseddata?.productId == "elm_monthly_test_autorenew_subscription" ? "Monthly Subscription is active" : purchaseddata?.productId == "elm_quarter_test_autorenew_subscription" ? "Quaterly Subscription is active" : "Yearly Subscription is active"}</Text>
+          <Text style={styles.title}>{purchaseddata?.productId == "elm_monthly_test_autorenew_subscription" ? "Monthly Subscription is active" : purchaseddata?.productId == "elm_quarter_test_autorenew_subscription" ? "Quaterly Subscription is active" : purchaseddata?.productId == "elm_yearly_test_autorenew_subscription" ? "Yearly Subscription is active" : ""}</Text>
           <Text style={styles.title}>You are already subscribe to app</Text>
+          <TouchableOpacity onPress={()=> {Linking.openURL(`https://play.google.com/store/account/subscriptions?package=com.elmiaptest.application&sku=${purchaseddata?.productId}`)}} style={{marginVertical:10}}>
+            <Text style={styles.title}>Unsubscribe</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -116,7 +118,7 @@ const Subscription = props => {
                   justifyContent: 'center',
                   margin: 10,
                 }}>
-                <Text style={{fontSize: 18}}>Buy</Text>
+                <Text style={{fontSize: 18, color:"#000"}}>Buy</Text>
               </View>
             </TouchableOpacity>
             // onPress={()=> subscriptionPress(p['productId'])}
@@ -153,7 +155,8 @@ const styles = StyleSheet.create({
   title:{
     fontSize:15,
     fontWeight:'600',
-    paddingVertical:10
+    paddingVertical:10,
+    color:"#000"
   }
 });
 

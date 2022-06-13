@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ElmIpaTest</string>
+    <string moduleConfig="true" name="CodePushDeploymentKey">goR4wcFmV27LjWoSkRfoITjnnxcWkxlqMo8xK</string>
 </resources>
