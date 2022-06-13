@@ -63,7 +63,9 @@ const Subscription = props => {
     checkSubscription();
   };
 
-  
+  const Unsubscribe =()=>{
+    Linking.openURL('https://play.google.com/store/account/subscriptions?package=com.elmiaptest.application&sku='+ purchaseddata?.productId)
+  }
 
   if (purchased) {
     return (
@@ -75,7 +77,8 @@ const Subscription = props => {
           />
           <Text style={styles.title}>{purchaseddata?.productId == "elm_monthly_test_autorenew_subscription" ? "Monthly Subscription is active" : purchaseddata?.productId == "elm_quarter_test_autorenew_subscription" ? "Quaterly Subscription is active" : purchaseddata?.productId == "elm_yearly_test_autorenew_subscription" ? "Yearly Subscription is active" : ""}</Text>
           <Text style={styles.title}>You are already subscribe to app</Text>
-          <TouchableOpacity onPress={()=> {Linking.openURL(`https://play.google.com/store/account/subscriptions?package=com.elmiaptest.application&sku=${purchaseddata?.productId}`)}} style={{marginVertical:10}}>
+          
+          <TouchableOpacity style={{marginVertical:10}} onPress={Unsubscribe}>
             <Text style={styles.title}>Unsubscribe</Text>
           </TouchableOpacity>
         </View>
