@@ -20,6 +20,8 @@ const itemSubs = Platform.select({
   ],
 });
 
+let purchaseUpdateSubscription;
+
 const Subscription = props => {
   const [products, setProducts] = useState({});
   const [purchased, setPurchased] = useState(false);
@@ -48,6 +50,14 @@ const Subscription = props => {
           .then(res => {
             setProducts(res);
           });
+        // IAP.getAvailablePurchases()
+        // .catch(() => {})
+        //   .then(async res => {
+        //     try {
+        //       alert(JSON.stringify(res))
+        //     } catch (error) {
+        //     }
+        //   })
         IAP.getPurchaseHistory()
           .catch(() => {})
           .then(async res => {
@@ -55,13 +65,21 @@ const Subscription = props => {
               const receipt = res[res.length - 1].transactionReceipt;
               if (receipt) {
                 setPurchaseddata(receipt);
-                alert(JSON.stringify(receipt));
+                alert(JSON.stringify(receipt.productId));
                 await AsyncStorage.setItem('purchase', JSON.stringify(receipt));
                 setPurchased(true);
               }
             } catch (error) {}
           });
       });
+
+    // purchaseUpdateSubscription = IAP.purchaseUpdatedListener((purchase) => {
+    //   const receipt = purchase.transactionReceipt;
+    //   if (receipt) {
+    //     alert(JSON.stringify(receipt))
+    //     IAP.finishTransaction(purchase, false);
+    //   }
+    // });
   };
 
   const subscriptionPress = productId => {
@@ -91,13 +109,13 @@ const Subscription = props => {
             style={{height: 100, width: 100}}
           />
           <Text style={styles.title}>
-            {purchaseddata?.productId ==
+            {String(purchaseddata?.productId) ==
             'elm_monthly_test_autorenew_subscription'
               ? 'Monthly Subscription is active'
-              : purchaseddata?.productId ==
+              : String(purchaseddata?.productId) ==
                 'elm_quarter_test_autorenew_subscription'
               ? 'Quaterly Subscription is active'
-              : purchaseddata?.productId ==
+              : String(purchaseddata?.productId) ==
                 'elm_yearly_test_autorenew_subscription'
               ? 'Yearly Subscription is active'
               : ''}
@@ -105,7 +123,7 @@ const Subscription = props => {
           <Text style={styles.title}>You are already subscribe to app</Text>
           {products
             .filter(item => item !== purchaseddata?.productId)
-            .map((p) => {
+            .map(p => (
               <TouchableOpacity
                 style={{
                   backgroundColor: '#1D458A',
@@ -139,7 +157,7 @@ const Subscription = props => {
                   <Text style={{fontSize: 18, color: '#000'}}>Buy</Text>
                 </View>
               </TouchableOpacity>
-            })}
+            ))}
           <TouchableOpacity style={{marginVertical: 10}} onPress={Unsubscribe}>
             <Text style={styles.title}>Unsubscribe</Text>
           </TouchableOpacity>
