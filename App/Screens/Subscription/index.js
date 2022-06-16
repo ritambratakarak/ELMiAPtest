@@ -50,14 +50,14 @@ const Subscription = props => {
           .then(res => {
             setProducts(res);
           });
-        // IAP.getAvailablePurchases()
-        // .catch(() => {})
-        //   .then(async res => {
-        //     try {
-        //       alert(JSON.stringify(res))
-        //     } catch (error) {
-        //     }
-        //   })
+        IAP.getAvailablePurchases()
+        .catch(() => {})
+          .then(async res => {
+            try {
+              alert(JSON.stringify(res))
+            } catch (error) {
+            }
+          })
         IAP.getPurchaseHistory()
           .catch(() => {})
           .then(async res => {
@@ -65,9 +65,8 @@ const Subscription = props => {
               const receipt = res[res.length - 1].transactionReceipt;
               if (receipt) {
                 setPurchaseddata(receipt);
-                alert(JSON.stringify(receipt.productId));
                 await AsyncStorage.setItem('purchase', JSON.stringify(receipt));
-                setPurchased(true);
+                // setPurchased(true);
               }
             } catch (error) {}
           });
