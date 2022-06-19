@@ -112,9 +112,19 @@ export default function Subscription() {
 
   if (purchased) {
     return (
-      <View style={{flex:1, justifyContent:"center", alignItems:'center', alignSelf:"center", backgroundColor:"#fff"}}>
+      <View style={{justifyContent:"center", alignItems:'center', alignSelf:"center", backgroundColor:"#fff", width:'100%', height:'100%'}}>
         <Text style={styles.title}>WELCOME TO THE APP!</Text>
         <Text style={styles.content}>{JSON.stringify(productData.productId)}</Text>
+        <Text style={styles.content}>{JSON.stringify(productData?.productId) ==
+            'elm_monthly_test_autorenew_subscription'
+              ? 'Monthly Subscription is active'
+              : JSON.stringify(productData?.productId) ==
+                'elm_quarter_test_autorenew_subscription'
+              ? 'Quaterly Subscription is active'
+              : JSON.stringify(productData?.productId) ==
+                'elm_yearly_test_autorenew_subscription'
+              ? 'Yearly Subscription is active'
+              : 'None'}</Text>
         <Image source={img} style={{height: 100, width: 100}} />
         <TouchableOpacity style={{marginVertical: 10}} onPress={Unsubscribe}>
           <Text style={styles.title}>Unsubscribe</Text>
