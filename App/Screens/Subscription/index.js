@@ -1,17 +1,20 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
-  Image,
-  View,
   Text,
-  TouchableOpacity,
+  Alert,
+  Button,
+  Platform,
+  View,
+  Image,
   Linking,
+  TouchableOpacity,
 } from 'react-native';
 import {HEIGHT, GAP, COLORS, WIDTH, FONT} from '../../Utils/constants';
 import IAP from 'react-native-iap';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const itemSubs = Platform.select({
+// Platform select will allow you to use a different array of product ids based on the platform
+const items = Platform.select({
   ios: [],
   android: [
     'elm_monthly_test_autorenew_subscription',
@@ -21,154 +24,115 @@ const itemSubs = Platform.select({
 });
 
 let purchaseUpdateSubscription;
+let purchaseErrorSubscription;
+let img = require('../../Assets/tick.png');
 
-const Subscription = props => {
-  const [products, setProducts] = useState({});
-  const [purchased, setPurchased] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [purchaseddata, setPurchaseddata] = useState('');
+export default function Subscription() {
+  const [purchased, setPurchased] = useState(false); //set to true if the user has active subscription
+  const [products, setProducts] = useState({}); //used to store list of products
+  const [productData, setProductData] = useState(""); //product data
+
+  const validate = async receipt => {
+    try {
+      // send receipt to backend
+      Alert.alert(JSON.stringify(receipt));
+    } catch (error) {
+      Alert.alert('Error!', error.message);
+    }
+  };
 
   useEffect(() => {
-    checkSubscription();
-    return () => {
-      try {
-        IAP.endConnection();
-      } catch (error) {}
-    };
-  }, []);
-
-  const checkSubscription = async () => {
     IAP.initConnection()
       .catch(() => {
         console.log('error connecting to store...');
       })
-      .then(async () => {
-        IAP.getSubscriptions(itemSubs)
+      .then(() => {
+        IAP.getSubscriptions(items)
           .catch(() => {
             console.log('error finding items');
           })
           .then(res => {
             setProducts(res);
           });
-        IAP.getAvailablePurchases()
-        .catch(() => {})
-          .then(async res => {
-            try {
-              alert(JSON.stringify(res))
-            } catch (error) {
-            }
-          })
+          
         IAP.getPurchaseHistory()
           .catch(() => {})
-          .then(async res => {
+          .then(res => {
             try {
               const receipt = res[res.length - 1].transactionReceipt;
               if (receipt) {
-                setPurchaseddata(receipt);
-                await AsyncStorage.setItem('purchase', JSON.stringify(receipt));
-                // setPurchased(true);
+                validate(receipt);
+                setPurchased(true)
+                setProductData(receipt)
               }
             } catch (error) {}
           });
       });
 
-    // purchaseUpdateSubscription = IAP.purchaseUpdatedListener((purchase) => {
-    //   const receipt = purchase.transactionReceipt;
-    //   if (receipt) {
-    //     alert(JSON.stringify(receipt))
-    //     IAP.finishTransaction(purchase, false);
-    //   }
-    // });
-  };
+    purchaseErrorSubscription = IAP.purchaseErrorListener(error => {
+      if (!(error['responseCode'] === '2')) {
+        Alert.alert(
+          'Error',
+          'There has been an error with your purchase, error code' +
+            error['code'],
+        );
+      }
+    });
+    purchaseUpdateSubscription = IAP.purchaseUpdatedListener(purchase => {
+      const receipt = purchase.transactionReceipt;
+      if (receipt) {
+        validate(receipt);
+        IAP.finishTransaction(purchase, false);
+      }
+    });
+
+    return () => {
+      try {
+        purchaseUpdateSubscription.remove();
+      } catch (error) {}
+      try {
+        purchaseErrorSubscription.remove();
+      } catch (error) {}
+      try {
+        IAP.endConnection();
+      } catch (error) {}
+    };
+  }, []);
 
   const subscriptionPress = productId => {
     IAP.requestSubscription(productId);
-    checkSubscription();
   };
 
   const Unsubscribe = () => {
     Linking.openURL(
       'https://play.google.com/store/account/subscriptions?package=com.elmiaptest.application&sku=' +
-        purchaseddata?.productId,
+      productData?.productId,
     );
   };
 
   if (purchased) {
     return (
-      <View style={styles.container}>
-        <View
-          style={{
-            justifyContent: 'center',
-            alignSelf: 'center',
-            flex: 1,
-            alignItems: 'center',
-          }}>
-          <Image
-            source={require('../../Assets/tick.png')}
-            style={{height: 100, width: 100}}
-          />
-          <Text style={styles.title}>
-            {String(purchaseddata?.productId) ==
-            'elm_monthly_test_autorenew_subscription'
-              ? 'Monthly Subscription is active'
-              : String(purchaseddata?.productId) ==
-                'elm_quarter_test_autorenew_subscription'
-              ? 'Quaterly Subscription is active'
-              : String(purchaseddata?.productId) ==
-                'elm_yearly_test_autorenew_subscription'
-              ? 'Yearly Subscription is active'
-              : ''}
-          </Text>
-          <Text style={styles.title}>You are already subscribe to app</Text>
-          {products
-            .filter(item => item !== purchaseddata?.productId)
-            .map(p => (
-              <TouchableOpacity
-                style={{
-                  backgroundColor: '#1D458A',
-                  width: '100%',
-                  height: 200,
-                  marginVertical: 15,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  borderRadius: 15,
-                }}
-                key={p['productId']}
-                onPress={() => subscriptionPress(p['productId'])}>
-                <Text
-                  style={{color: '#fff', fontSize: 20}}>{`${p['title']}`}</Text>
-                <Text
-                  style={{
-                    color: '#fff',
-                    fontSize: 18,
-                  }}>{`Price: ${p['originalPrice']}`}</Text>
-                <View
-                  style={{
-                    backgroundColor: '#fff',
-                    alignSelf: 'center',
-                    width: 80,
-                    height: 40,
-                    alignItems: 'center',
-                    borderRadius: 10,
-                    justifyContent: 'center',
-                    margin: 10,
-                  }}>
-                  <Text style={{fontSize: 18, color: '#000'}}>Buy</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          <TouchableOpacity style={{marginVertical: 10}} onPress={Unsubscribe}>
-            <Text style={styles.title}>Unsubscribe</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={{flex:1, justifyContent:"center", alignItems:'center', alignSelf:"center", backgroundColor:"#fff"}}>
+        <Text style={styles.title}>WELCOME TO THE APP!</Text>
+        <Text style={styles.content}>{JSON.stringify(productData.productId)}</Text>
+        <Image source={img} style={{height: 100, width: 100}} />
+        <TouchableOpacity style={{marginVertical: 10}} onPress={Unsubscribe}>
+          <Text style={styles.title}>Unsubscribe</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
-  return (
-    <View style={styles.container}>
-      {products.length > 0 ? (
+  if (products.length > 0) {
+    return (
+      <View style={styles.container}>
         <View style={styles.repeatContainer}>
+          <Text style={styles.title}>Welcome to my app!</Text>
+          <Text>
+            This app requires a subscription to use, a purchase of the
+            subscription grants you access to the entire app
+          </Text>
+
           {products.map(p => (
             <TouchableOpacity
               style={{
@@ -189,45 +153,26 @@ const Subscription = props => {
                   color: '#fff',
                   fontSize: 18,
                 }}>{`Price: ${p['originalPrice']}`}</Text>
-              <View
-                style={{
-                  backgroundColor: '#fff',
-                  alignSelf: 'center',
-                  width: 80,
-                  height: 40,
-                  alignItems: 'center',
-                  borderRadius: 10,
-                  justifyContent: 'center',
-                  margin: 10,
-                }}>
-                <Text style={{fontSize: 18, color: '#000'}}>Buy</Text>
-              </View>
             </TouchableOpacity>
-            // onPress={()=> subscriptionPress(p['productId'])}
-            // <Button
-            //   key={p['productId']}
-            //   title={`Purchase ${p['title']}`}
-            //   onPress={() => {
-            //     console.log(p['productId']);
-            //     IAP.requestSubscription(p['productId']);
-            //   }}
-            // />
           ))}
         </View>
-      ) : (
-        <View style={styles.container}>
-          <Text>Fetching products please wait...</Text>
-        </View>
-      )}
-    </View>
-  );
-};
+      </View>
+    );
+  } else {
+    return (
+      <View style={styles.container}>
+        <Text>Fetching products please wait...</Text>
+      </View>
+    );
+  }
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'column',
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   repeatContainer: {
     width: '90%',
@@ -235,11 +180,11 @@ const styles = StyleSheet.create({
     marginBottom: HEIGHT * 0.04,
   },
   title: {
-    fontSize: 15,
-    fontWeight: '600',
-    paddingVertical: 10,
+    fontSize: 22,
+    color: 'red',
+  },
+  content: {
+    fontSize: 16,
     color: '#000',
   },
 });
-
-export default Subscription;
