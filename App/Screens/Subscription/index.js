@@ -13,6 +13,7 @@ import {
 import {HEIGHT, GAP, COLORS, WIDTH, FONT} from '../../Utils/constants';
 import IAP from 'react-native-iap';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import PlanIap from '../../Components/PlanIap';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 // Platform select will allow you to use a different array of product ids based on the platform
 const items = Platform.select({
@@ -218,42 +219,52 @@ export default function Subscription() {
             {products
               .filter(item => item['productId'] !== productId)
               .map(p => (
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#1D458A',
-                    width: '100%',
-                    height: 200,
-                    marginVertical: 15,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    borderRadius: 15,
-                  }}
-                  key={p['productId']}
-                  onPress={() => subscriptionPress(p['productId'])}>
-                  <Text
-                    style={{
-                      color: '#fff',
-                      fontSize: 20,
-                    }}>{`${p['title']}`}</Text>
-                  <Text
-                    style={{
-                      color: '#fff',
-                      fontSize: 18,
-                    }}>{`Price: ${p['originalPrice']}`}</Text>
-                  <View
-                    style={{
-                      backgroundColor: '#fff',
-                      alignSelf: 'center',
-                      width: 80,
-                      height: 40,
-                      alignItems: 'center',
-                      borderRadius: 10,
-                      justifyContent: 'center',
-                      margin: 10,
-                    }}>
-                    <Text style={{fontSize: 18, color: '#000'}}>Buy</Text>
-                  </View>
-                </TouchableOpacity>
+                <PlanIap 
+            key={p['productId']}
+            image={p['backImage']}
+            planName={p['title']}
+            planDes={p['description']}
+            Color={p['colors']}
+            price={p['originalPrice']}
+            days={p['days1']}
+            dayTitle={p['dayTitle1']}
+            />
+                // <TouchableOpacity
+                //   style={{
+                //     backgroundColor: '#1D458A',
+                //     width: '100%',
+                //     height: 200,
+                //     marginVertical: 15,
+                //     justifyContent: 'center',
+                //     alignItems: 'center',
+                //     borderRadius: 15,
+                //   }}
+                //   key={p['productId']}
+                //   onPress={() => subscriptionPress(p['productId'])}>
+                //   <Text
+                //     style={{
+                //       color: '#fff',
+                //       fontSize: 20,
+                //     }}>{`${p['title']}`}</Text>
+                //   <Text
+                //     style={{
+                //       color: '#fff',
+                //       fontSize: 18,
+                //     }}>{`Price: ${p['originalPrice']}`}</Text>
+                //   <View
+                //     style={{
+                //       backgroundColor: '#fff',
+                //       alignSelf: 'center',
+                //       width: 80,
+                //       height: 40,
+                //       alignItems: 'center',
+                //       borderRadius: 10,
+                //       justifyContent: 'center',
+                //       margin: 10,
+                //     }}>
+                //     <Text style={{fontSize: 18, color: '#000'}}>Buy</Text>
+                //   </View>
+                // </TouchableOpacity>
               ))}
 
             {/* <Text style={styles.content}>You package Id: {productData}</Text> */}
@@ -274,26 +285,17 @@ export default function Subscription() {
           </Text>
 
           {products.map(p => (
-            <TouchableOpacity
-              style={{
-                backgroundColor: '#1D458A',
-                width: '100%',
-                height: 200,
-                marginVertical: 15,
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: 15,
-              }}
-              key={p['productId']}
-              onPress={() => subscriptionPress(p['productId'])}>
-              <Text
-                style={{color: '#fff', fontSize: 20}}>{`${p['title']}`}</Text>
-              <Text
-                style={{
-                  color: '#fff',
-                  fontSize: 18,
-                }}>{`Price: ${p['originalPrice']}`}</Text>
-            </TouchableOpacity>
+            
+            <PlanIap 
+            key={p['productId']}
+            image={p['backImage']}
+            planName={p['title']}
+            planDes={p['description']}
+            Color={p['colors']}
+            price={p['originalPrice']}
+            days={p['days1']}
+            dayTitle={p['dayTitle1']}
+            />
           ))}
         </View>
       </View>
@@ -317,7 +319,7 @@ const styles = StyleSheet.create({
   repeatContainer: {
     width: '90%',
     alignSelf: 'center',
-    marginBottom: HEIGHT * 0.04,
+    marginBottom: 10,
   },
   title: {
     fontSize: 22,
