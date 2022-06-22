@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   StyleSheet,
   Text,
@@ -13,6 +13,7 @@ import {
 import {HEIGHT, GAP, COLORS, WIDTH, FONT} from '../../Utils/constants';
 import IAP from 'react-native-iap';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 // Platform select will allow you to use a different array of product ids based on the platform
 const items = Platform.select({
   ios: [],
@@ -37,12 +38,42 @@ export default function Subscription() {
   const [productId, setProductId] = useState(''); //purchased item id
   const [Error, setError] = useState(''); // error
 
+  useFocusEffect(
+    useCallback(() => {
+      avaliblePurchase();
+    }, []),
+  );
+
   useEffect(() => {
     IAP.initConnection() // Init in-aap-purchase connection...
       .catch(() => {
         console.log('error connecting to store...');
       })
       .then(() => {
+        IAP.getSubscriptions(items) // fetch all avalibele subscription item
+          .catch(() => {
+            console.log('error finding items');
+          })
+          .then(res => {
+            setProducts(res); // set item
+          });
+        avaliblePurchase();
+        // IAP.getPurchaseHistory()
+        //   .catch(() => {})
+        //   .then(async res => {
+        //     try {
+        //       const receipt = res[res.length - 1].transactionReceipt;
+        //       if (receipt) {
+        //         const purchaseData = await AsyncStorage.getItem('purchaseName');
+        //         const purchaseId = await AsyncStorage.getItem('purchaseId');
+        //         if (purchaseData !== null) {
+        //           setPurchased(true);
+        //           setPackageName(JSON.parse(purchaseData));
+        //           setProductId(JSON.parse(purchaseId));
+        //         }
+        //       }
+        //     } catch (error) {}
+        //   });
         IAP.flushFailedPurchasesCachedAsPendingAndroid()
           .then(async consumed => {
             console.log('consumed all items?', consumed);
@@ -53,36 +84,11 @@ export default function Subscription() {
               err.message,
             );
           });
-        IAP.getSubscriptions(items) // fetch all avalibele subscription item
-          .catch(() => {
-            console.log('error finding items');
-          })
-          .then(res => {
-            setProducts(res); // set item
-          });
-        IAP.getPurchaseHistory()
-          .catch(() => {})
-          .then(async res => {
-            try {
-              const receipt = res[res.length - 1].transactionReceipt;
-              if (receipt) {
-                Alert.alert('', JSON.stringify(receipt));
-                setProductData(receipt);
-                const purchaseData = await AsyncStorage.getItem('purchaseName');
-                const purchaseId = await AsyncStorage.getItem('purchaseId');
-                if (purchaseData !== null) {
-                  setPurchased(true);
-                  setPackageName(JSON.parse(purchaseData));
-                  setProductId(JSON.parse(purchaseId));
-                }
-              }
-            } catch (error) {}
-          });
       });
     purchaseUpdateSubscription = IAP.purchaseUpdatedListener(async purchase => {
       const receipt = purchase.transactionReceipt;
       if (receipt) {
-        Alert.alert('', JSON.stringify(receipt));
+        Alert.alert('Update Lisener', JSON.stringify(receipt));
         try {
           if (Platform.OS === 'ios') {
             IAP.finishTransactionIOS(purchase.transactionId);
@@ -120,6 +126,36 @@ export default function Subscription() {
     };
   }, []);
 
+  const avaliblePurchase = () => {
+    IAP.getAvailablePurchases()
+      .catch(() => {})
+      .then(async res => {
+        try {
+          Alert.alert('UseEffect Avalivle Purchase', JSON.stringify(res));
+          if (res && res.length > 0) {
+            setProductData(res[0].transactionReceipt);
+            setPurchaseToken(res[0].purchaseToken);
+            setPackageName(res[0].packageNameAndroid);
+            setProductId(res[0].productId);
+            setPurchased(true);
+            await AsyncStorage.setItem(
+              'purchaseName',
+              JSON.stringify(res.packageNameAndroid),
+            );
+            // const purchaseData = await AsyncStorage.getItem('purchaseName');
+            // const purchaseId = await AsyncStorage.getItem('purchaseId');
+            // if (purchaseData !== null) {
+            //   setPackageName(JSON.parse(purchaseData));
+            //   setProductId(JSON.parse(purchaseId));
+            // }
+          }
+        } catch (err) {
+          console.warn(err.code, err.message);
+          Alert.alert(err.message);
+        }
+      });
+  };
+
   const subscriptionPress = async sku => {
     setBuyIsLoading(true);
     console.log('IAP req', sku);
@@ -128,22 +164,7 @@ export default function Subscription() {
         .then(async result => {
           console.log('IAP req sub', result);
           if (Platform.OS === 'android') {
-            setPurchaseToken(result.purchaseToken);
-            setPackageName(result.packageNameAndroid);
-            setProductId(result.productId);
-            setPurchased(true);
-            await AsyncStorage.setItem(
-              'purchaseToken',
-              JSON.stringify(result.purchaseToken),
-            );
-            await AsyncStorage.setItem(
-              'purchaseName',
-              JSON.stringify(result.packageNameAndroid),
-            );
-            await AsyncStorage.setItem(
-              'purchaseId',
-              JSON.stringify(result.productId),
-            );
+            avaliblePurchase()
           } else if (Platform.OS === 'ios') {
             console.log(result.transactionReceipt);
             setProductId(result.productId);
@@ -168,6 +189,17 @@ export default function Subscription() {
       'https://play.google.com/store/account/subscriptions?package=com.elmiaptest.application&sku=' +
         productId,
     );
+  };
+
+  const restorePurchase = async () => {
+    try {
+      const purchases = await IAP.getAvailablePurchases();
+      const consume =  await IAP.consumePurchaseAndroid(purchases.purchaseToken)
+        Alert.alert(
+          'Consume Purchase',
+          JSON.stringify(consume),
+          );
+    } catch (error) {}
   };
 
   if (purchased) {
@@ -198,6 +230,11 @@ export default function Subscription() {
           <Image source={img} style={{height: 100, width: 100}} />
           <TouchableOpacity style={{marginVertical: 10}} onPress={Unsubscribe}>
             <Text style={styles.title}>Unsubscribe</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{marginVertical: 10}}
+            onPress={restorePurchase}>
+            <Text style={styles.title}>Restore Purchase</Text>
           </TouchableOpacity>
           <View style={{width: '90%', alignSelf: 'center'}}>
             {products
@@ -240,6 +277,8 @@ export default function Subscription() {
                   </View>
                 </TouchableOpacity>
               ))}
+
+            <Text style={styles.content}>You package Id: {productData}</Text>
           </View>
         </ScrollView>
       </View>
