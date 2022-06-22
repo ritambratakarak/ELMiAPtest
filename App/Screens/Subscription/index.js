@@ -34,7 +34,6 @@ export default function Subscription() {
   const [productData, setProductData] = useState(''); //product data
   const [buyIsLoading, setBuyIsLoading] = useState(''); //get item lodaing data
   const [purchaseToken, setPurchaseToken] = useState(''); // purchased item token
-  const [packageName, setPackageName] = useState(''); //purchased item name
   const [productId, setProductId] = useState(''); //purchased item id
   const [Error, setError] = useState(''); // error
 
@@ -58,22 +57,6 @@ export default function Subscription() {
             setProducts(res); // set item
           });
         avaliblePurchase();
-        // IAP.getPurchaseHistory()
-        //   .catch(() => {})
-        //   .then(async res => {
-        //     try {
-        //       const receipt = res[res.length - 1].transactionReceipt;
-        //       if (receipt) {
-        //         const purchaseData = await AsyncStorage.getItem('purchaseName');
-        //         const purchaseId = await AsyncStorage.getItem('purchaseId');
-        //         if (purchaseData !== null) {
-        //           setPurchased(true);
-        //           setPackageName(JSON.parse(purchaseData));
-        //           setProductId(JSON.parse(purchaseId));
-        //         }
-        //       }
-        //     } catch (error) {}
-        //   });
         IAP.flushFailedPurchasesCachedAsPendingAndroid()
           .then(async consumed => {
             console.log('consumed all items?', consumed);
@@ -86,9 +69,10 @@ export default function Subscription() {
           });
       });
     purchaseUpdateSubscription = IAP.purchaseUpdatedListener(async purchase => {
-      const receipt = purchase.transactionReceipt;
+      const receipt = purchase.transactionReceipt
+        ? purchase.transactionReceipt
+        : purchase.originalJson;
       if (receipt) {
-        Alert.alert('Update Lisener', JSON.stringify(receipt));
         try {
           if (Platform.OS === 'ios') {
             IAP.finishTransactionIOS(purchase.transactionId);
@@ -116,9 +100,11 @@ export default function Subscription() {
     return () => {
       try {
         purchaseUpdateSubscription.remove();
+        purchaseUpdateSubscription = null;
       } catch (error) {}
       try {
         purchaseErrorSubscription.remove();
+        purchaseErrorSubscription = null;
       } catch (error) {}
       try {
         IAP.endConnection();
@@ -135,19 +121,12 @@ export default function Subscription() {
           if (res && res.length > 0) {
             setProductData(res[0].transactionReceipt);
             setPurchaseToken(res[0].purchaseToken);
-            setPackageName(res[0].packageNameAndroid);
             setProductId(res[0].productId);
             setPurchased(true);
             await AsyncStorage.setItem(
               'purchaseName',
               JSON.stringify(res.packageNameAndroid),
             );
-            // const purchaseData = await AsyncStorage.getItem('purchaseName');
-            // const purchaseId = await AsyncStorage.getItem('purchaseId');
-            // if (purchaseData !== null) {
-            //   setPackageName(JSON.parse(purchaseData));
-            //   setProductId(JSON.parse(purchaseId));
-            // }
           }
         } catch (err) {
           console.warn(err.code, err.message);
@@ -164,11 +143,11 @@ export default function Subscription() {
         .then(async result => {
           console.log('IAP req sub', result);
           if (Platform.OS === 'android') {
-            avaliblePurchase()
+            avaliblePurchase();
           } else if (Platform.OS === 'ios') {
             console.log(result.transactionReceipt);
             setProductId(result.productId);
-            setReceipt(result.transactionReceipt);
+            setProductData(result.transactionReceipt);
           }
           setBuyIsLoading(false);
         })
@@ -181,6 +160,7 @@ export default function Subscription() {
       setBuyIsLoading(false);
       console.warn(`err ${error.code}`, error.message);
       setError(err.message);
+      Alert.alert(err.message);
     }
   };
 
@@ -193,13 +173,11 @@ export default function Subscription() {
 
   const restorePurchase = async () => {
     try {
-      const purchases = await IAP.getAvailablePurchases();
-      const consume =  await IAP.consumePurchaseAndroid(purchases.purchaseToken)
-        Alert.alert(
-          'Consume Purchase',
-          JSON.stringify(consume),
-          );
-    } catch (error) {}
+      avaliblePurchase()
+      IAP.getPurchasedItemsAndroid()
+    } catch (err) {
+      Alert.alert(err.message);
+    }
   };
 
   if (purchased) {
@@ -278,7 +256,7 @@ export default function Subscription() {
                 </TouchableOpacity>
               ))}
 
-            <Text style={styles.content}>You package Id: {productData}</Text>
+            {/* <Text style={styles.content}>You package Id: {productData}</Text> */}
           </View>
         </ScrollView>
       </View>
