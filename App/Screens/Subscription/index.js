@@ -13,6 +13,7 @@ import {
 import {HEIGHT, GAP, COLORS, WIDTH, FONT} from '../../Utils/constants';
 import IAP from 'react-native-iap';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import PlanIap from '../../Components/PlanIap';
 // Platform select will allow you to use a different array of product ids based on the platform
 const items = Platform.select({
   ios: [],
@@ -58,7 +59,38 @@ export default function Subscription() {
             console.log('error finding items');
           })
           .then(res => {
-            setProducts(res); // set item
+            setProducts([res
+              // {
+              //   productId: 'elm_monthly_test_autorenew_subscription',
+              //   title: "Monthly",
+              //   originalPrice: 120,
+              //   backImage:require('../../Assets/purple.png'),
+              //   colors:'#5A20CB',
+              //   description:'When the image has rounded corners, specifying an overlayColor will cause the remaining space.',
+              //   days1:'1',
+              //   dayTitle1:'month'
+              // },
+              // {
+              //   productId: 'elm_quarter_test_autorenew_subscription',
+              //   title: "Quartarly",
+              //   originalPrice: 150,
+              //   colors:'#EE9946',
+              //   backImage:require('../../Assets/orange.png'),
+              //   description:'When the image has rounded corners, specifying an overlayColor will cause the remaining space.',
+              //   days1:'6',
+              //   dayTitle1:'month'
+              // },
+              // {
+              //   productId: 'elm_yearly_test_autorenew_subscription',
+              //   title: "Yearly",
+              //   originalPrice: 1200,
+              //   backImage:require('../../Assets/green.png'),
+              //   colors:'#02B290',
+              //   description:'When the image has rounded corners, specifying an overlayColor will cause the remaining space.',
+              //   days1:'12',
+              //   dayTitle1:'month'
+              // },
+            ]); // set item
           });
         IAP.getPurchaseHistory()
           .catch(() => {})
@@ -257,26 +289,17 @@ export default function Subscription() {
           </Text>
 
           {products.map(p => (
-            <TouchableOpacity
-              style={{
-                backgroundColor: '#1D458A',
-                width: '100%',
-                height: 200,
-                marginVertical: 15,
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: 15,
-              }}
-              key={p['productId']}
-              onPress={() => subscriptionPress(p['productId'])}>
-              <Text
-                style={{color: '#fff', fontSize: 20}}>{`${p['title']}`}</Text>
-              <Text
-                style={{
-                  color: '#fff',
-                  fontSize: 18,
-                }}>{`Price: ${p['originalPrice']}`}</Text>
-            </TouchableOpacity>
+            
+            <PlanIap 
+            key={p['productId']}
+            image={p['backImage']}
+            planName={p['title']}
+            planDes={p['description']}
+            Color={p['colors']}
+            price={p['originalPrice']}
+            days={p['days1']}
+            dayTitle={p['dayTitle1']}
+            />
           ))}
         </View>
       </View>
@@ -300,7 +323,7 @@ const styles = StyleSheet.create({
   repeatContainer: {
     width: '90%',
     alignSelf: 'center',
-    marginBottom: HEIGHT * 0.04,
+    marginBottom: 10,
   },
   title: {
     fontSize: 22,
