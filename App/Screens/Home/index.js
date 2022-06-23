@@ -54,7 +54,7 @@ const Home = props => {
   }, [state]);
 
   const playvideo = async item => {
-    const asyncedata = await AsyncStorage.getItem('purchase');
+    const asyncedata = await AsyncStorage.getItem('purchaseName');
     console.log(asyncedata);
     if (asyncedata !== null) {
       navigation.navigate('Player', {

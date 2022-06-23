@@ -1,17 +1,22 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {
   StyleSheet,
-  Image,
-  View,
   Text,
-  TouchableOpacity,
+  Alert,
+  Platform,
+  View,
+  Image,
   Linking,
+  TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import {HEIGHT, GAP, COLORS, WIDTH, FONT} from '../../Utils/constants';
 import IAP from 'react-native-iap';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const itemSubs = Platform.select({
+import PlanIap from '../../Components/PlanIap';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
+// Platform select will allow you to use a different array of product ids based on the platform
+const items = Platform.select({
   ios: [],
   android: [
     'elm_monthly_test_autorenew_subscription',
@@ -21,225 +26,320 @@ const itemSubs = Platform.select({
 });
 
 let purchaseUpdateSubscription;
+let purchaseErrorSubscription;
+let img = require('../../Assets/tick.png');
 
-const Subscription = props => {
-  const [products, setProducts] = useState({});
-  const [purchased, setPurchased] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [purchaseddata, setPurchaseddata] = useState('');
+export default function Subscription() {
+  const [purchased, setPurchased] = useState(false); //set to true if the user has active subscription
+  const [products, setProducts] = useState({}); //used to store list of products
+  const [productData, setProductData] = useState(''); //product data
+  const [buyIsLoading, setBuyIsLoading] = useState(''); //get item lodaing data
+  const [purchaseToken, setPurchaseToken] = useState(''); // purchased item token
+  const [productId, setProductId] = useState(''); //purchased item id
+  const [Error, setError] = useState(''); // error
+
+  useFocusEffect(
+    useCallback(() => {
+      avaliblePurchase();
+    }, []),
+  );
 
   useEffect(() => {
-    checkSubscription();
+    IAP.initConnection() // Init in-aap-purchase connection...
+      .catch(() => {
+        console.log('error connecting to store...');
+      })
+      .then(() => {
+        IAP.getSubscriptions(items) // fetch all avalibele subscription item
+          .catch(() => {
+            console.log('error finding items');
+          })
+          .then(res => {
+            setProducts(res); // set item
+          });
+        avaliblePurchase();
+        IAP.flushFailedPurchasesCachedAsPendingAndroid()
+          .then(async consumed => {
+            console.log('consumed all items?', consumed);
+          })
+          .catch(err => {
+            console.warn(
+              `flushFailedPurchasesCachedAsPendingAndroid ERROR ${err.code}`,
+              err.message,
+            );
+          });
+      });
+    purchaseUpdateSubscription = IAP.purchaseUpdatedListener(async purchase => {
+      const receipt = purchase.transactionReceipt
+        ? purchase.transactionReceipt
+        : purchase.originalJson;
+      if (receipt) {
+        try {
+          if (Platform.OS === 'ios') {
+            IAP.finishTransactionIOS(purchase.transactionId);
+          } else if (Platform.OS === 'android') {
+            await IAP.consumeAllItemsAndroid(purchase.purchaseToken);
+            await IAP.acknowledgePurchaseAndroid(purchase.purchaseToken);
+          }
+          await IAP.finishTransaction(purchase, true);
+        } catch (ackErr) {
+          console.log('ackErr INAPP>>>>', ackErr);
+        }
+      }
+    });
+
+    purchaseErrorSubscription = IAP.purchaseErrorListener(error => {
+      if (!(error['responseCode'] === '2')) {
+        Alert.alert(
+          'Error',
+          'There has been an error with your purchase, error code' +
+            error['code'],
+        );
+      }
+    });
+
     return () => {
+      try {
+        purchaseUpdateSubscription.remove();
+        purchaseUpdateSubscription = null;
+      } catch (error) {}
+      try {
+        purchaseErrorSubscription.remove();
+        purchaseErrorSubscription = null;
+      } catch (error) {}
       try {
         IAP.endConnection();
       } catch (error) {}
     };
   }, []);
 
-  const checkSubscription = async () => {
-    IAP.initConnection()
-      .catch(() => {
-        console.log('error connecting to store...');
-      })
-      .then(async () => {
-        IAP.getSubscriptions(itemSubs)
-          .catch(() => {
-            console.log('error finding items');
-          })
-          .then(res => {
-            setProducts(res);
-          });
-        IAP.getAvailablePurchases()
-        .catch(() => {})
-          .then(async res => {
-            try {
-              alert(JSON.stringify(res))
-            } catch (error) {
-            }
-          })
-        IAP.getPurchaseHistory()
-          .catch(() => {})
-          .then(async res => {
-            try {
-              const receipt = res[res.length - 1].transactionReceipt;
-              if (receipt) {
-                setPurchaseddata(receipt);
-                await AsyncStorage.setItem('purchase', JSON.stringify(receipt));
-                // setPurchased(true);
-              }
-            } catch (error) {}
-          });
+  const avaliblePurchase = () => {
+    IAP.getAvailablePurchases()
+      .catch(() => {})
+      .then(async res => {
+        try {
+          Alert.alert('UseEffect Avalivle Purchase', JSON.stringify(res));
+          if (res && res.length > 0) {
+            setProductData(res[0].transactionReceipt);
+            setPurchaseToken(res[0].purchaseToken);
+            setProductId(res[0].productId);
+            setPurchased(true);
+            await AsyncStorage.setItem(
+              'purchaseName',
+              JSON.stringify(res.packageNameAndroid),
+            );
+          }
+        } catch (err) {
+          console.warn(err.code, err.message);
+          Alert.alert(err.message);
+        }
       });
-
-    // purchaseUpdateSubscription = IAP.purchaseUpdatedListener((purchase) => {
-    //   const receipt = purchase.transactionReceipt;
-    //   if (receipt) {
-    //     alert(JSON.stringify(receipt))
-    //     IAP.finishTransaction(purchase, false);
-    //   }
-    // });
   };
 
-  const subscriptionPress = productId => {
-    IAP.requestSubscription(productId);
-    checkSubscription();
+  const subscriptionPress = async sku => {
+    setBuyIsLoading(true);
+    console.log('IAP req', sku);
+    try {
+      await IAP.requestSubscription(sku)
+        .then(async result => {
+          console.log('IAP req sub', result);
+          if (Platform.OS === 'android') {
+            avaliblePurchase();
+          } else if (Platform.OS === 'ios') {
+            console.log(result.transactionReceipt);
+            setProductId(result.productId);
+            setProductData(result.transactionReceipt);
+          }
+          setBuyIsLoading(false);
+        })
+        .catch(err => {
+          setBuyIsLoading(false);
+          console.warn(`IAP req ERROR %%%%% ${err.code}`, err.message);
+          setError(err.message);
+        });
+    } catch (err) {
+      setBuyIsLoading(false);
+      console.warn(`err ${error.code}`, error.message);
+      setError(err.message);
+      Alert.alert(err.message);
+    }
   };
 
   const Unsubscribe = () => {
     Linking.openURL(
       'https://play.google.com/store/account/subscriptions?package=com.elmiaptest.application&sku=' +
-        purchaseddata?.productId,
+        productId,
     );
+  };
+
+  const restorePurchase = async () => {
+    try {
+      avaliblePurchase();
+      IAP.getPurchasedItemsAndroid().then(res => {
+        Alert.alert('Purchased Item', JSON.stringify(res));
+      });
+      IAP.refreshPurchaseItemsAndroid();
+    } catch (err) {
+      Alert.alert(err.message);
+    }
+  };
+
+  const dateToday = () => {
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+
+    today = dd +'/' + mm ;
+    return today;
   };
 
   if (purchased) {
     return (
-      <View style={styles.container}>
-        <View
-          style={{
+      <View
+        style={{
+          backgroundColor: '#fff',
+          width: '100%',
+          height: '100%',
+        }}>
+        <ScrollView
+          contentContainerStyle={{
             justifyContent: 'center',
-            alignSelf: 'center',
-            flex: 1,
             alignItems: 'center',
+            alignSelf: 'center',
           }}>
-          <Image
-            source={require('../../Assets/tick.png')}
-            style={{height: 100, width: 100}}
-          />
-          <Text style={styles.title}>
-            {String(purchaseddata?.productId) ==
-            'elm_monthly_test_autorenew_subscription'
+          <Text style={styles.title}>WELCOME TO THE APP!</Text>
+          <Text style={styles.content}>You package Id: {productId}</Text>
+          <Text style={styles.content}>
+            {productId == 'elm_monthly_test_autorenew_subscription'
               ? 'Monthly Subscription is active'
-              : String(purchaseddata?.productId) ==
-                'elm_quarter_test_autorenew_subscription'
+              : productId == 'elm_quarter_test_autorenew_subscription'
               ? 'Quaterly Subscription is active'
-              : String(purchaseddata?.productId) ==
-                'elm_yearly_test_autorenew_subscription'
+              : productId == 'elm_yearly_test_autorenew_subscription'
               ? 'Yearly Subscription is active'
               : ''}
           </Text>
-          <Text style={styles.title}>You are already subscribe to app</Text>
-          {products
-            .filter(item => item !== purchaseddata?.productId)
-            .map(p => (
-              <TouchableOpacity
-                style={{
-                  backgroundColor: '#1D458A',
-                  width: '100%',
-                  height: 200,
-                  marginVertical: 15,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  borderRadius: 15,
-                }}
-                key={p['productId']}
-                onPress={() => subscriptionPress(p['productId'])}>
-                <Text
-                  style={{color: '#fff', fontSize: 20}}>{`${p['title']}`}</Text>
-                <Text
-                  style={{
-                    color: '#fff',
-                    fontSize: 18,
-                  }}>{`Price: ${p['originalPrice']}`}</Text>
-                <View
-                  style={{
-                    backgroundColor: '#fff',
-                    alignSelf: 'center',
-                    width: 80,
-                    height: 40,
-                    alignItems: 'center',
-                    borderRadius: 10,
-                    justifyContent: 'center',
-                    margin: 10,
-                  }}>
-                  <Text style={{fontSize: 18, color: '#000'}}>Buy</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+          <Image source={img} style={{height: 100, width: 100}} />
           <TouchableOpacity style={{marginVertical: 10}} onPress={Unsubscribe}>
             <Text style={styles.title}>Unsubscribe</Text>
           </TouchableOpacity>
-        </View>
+          <TouchableOpacity
+            style={{marginVertical: 10}}
+            onPress={restorePurchase}>
+            <Text style={styles.title}>Restore Purchase</Text>
+          </TouchableOpacity>
+          <View style={{width: '90%', alignSelf: 'center'}}>
+            {products
+              .filter(item => item['productId'] !== productId)
+              .map(p => (
+                <PlanIap
+                  key={p['productId']}
+                  image={require('../../Assets/green.png')}
+                  planName={p['title']}
+                  planDes={'Please Purchase this plan '}
+                  Color={'#000'}
+                  price={p['originalPrice']}
+                  days={dateToday()}
+                  onPress={() => subscriptionPress(p['productId'])}
+                />
+                // <TouchableOpacity
+                //   style={{
+                //     backgroundColor: '#1D458A',
+                //     width: '100%',
+                //     height: 200,
+                //     marginVertical: 15,
+                //     justifyContent: 'center',
+                //     alignItems: 'center',
+                //     borderRadius: 15,
+                //   }}
+                //   key={p['productId']}
+                //   onPress={() => subscriptionPress(p['productId'])}>
+                //   <Text
+                //     style={{
+                //       color: '#fff',
+                //       fontSize: 20,
+                //     }}>{`${p['title']}`}</Text>
+                //   <Text
+                //     style={{
+                //       color: '#fff',
+                //       fontSize: 18,
+                //     }}>{`Price: ${p['originalPrice']}`}</Text>
+                //   <View
+                //     style={{
+                //       backgroundColor: '#fff',
+                //       alignSelf: 'center',
+                //       width: 80,
+                //       height: 40,
+                //       alignItems: 'center',
+                //       borderRadius: 10,
+                //       justifyContent: 'center',
+                //       margin: 10,
+                //     }}>
+                //     <Text style={{fontSize: 18, color: '#000'}}>Buy</Text>
+                //   </View>
+                // </TouchableOpacity>
+              ))}
+
+            {/* <Text style={styles.content}>You package Id: {productData}</Text> */}
+          </View>
+        </ScrollView>
       </View>
     );
   }
 
-  return (
-    <View style={styles.container}>
-      {products.length > 0 ? (
+  if (products.length > 0) {
+    return (
+      <View style={styles.container}>
         <View style={styles.repeatContainer}>
+          <Text style={styles.title}>Welcome to my app!</Text>
+          <Text>
+            This app requires a subscription to use, a purchase of the
+            subscription grants you access to the entire app
+          </Text>
+
           {products.map(p => (
-            <TouchableOpacity
-              style={{
-                backgroundColor: '#1D458A',
-                width: '100%',
-                height: 200,
-                marginVertical: 15,
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: 15,
-              }}
+            <PlanIap
               key={p['productId']}
-              onPress={() => subscriptionPress(p['productId'])}>
-              <Text
-                style={{color: '#fff', fontSize: 20}}>{`${p['title']}`}</Text>
-              <Text
-                style={{
-                  color: '#fff',
-                  fontSize: 18,
-                }}>{`Price: ${p['originalPrice']}`}</Text>
-              <View
-                style={{
-                  backgroundColor: '#fff',
-                  alignSelf: 'center',
-                  width: 80,
-                  height: 40,
-                  alignItems: 'center',
-                  borderRadius: 10,
-                  justifyContent: 'center',
-                  margin: 10,
-                }}>
-                <Text style={{fontSize: 18, color: '#000'}}>Buy</Text>
-              </View>
-            </TouchableOpacity>
-            // onPress={()=> subscriptionPress(p['productId'])}
-            // <Button
-            //   key={p['productId']}
-            //   title={`Purchase ${p['title']}`}
-            //   onPress={() => {
-            //     console.log(p['productId']);
-            //     IAP.requestSubscription(p['productId']);
-            //   }}
-            // />
+              image={require('../../Assets/green.png')}
+              planName={p['title']}
+              planDes={'Please Purchase this plan '}
+              Color={'#000'}
+              price={p['originalPrice']}
+              days={"1 months"}
+              onPress={() => subscriptionPress(p['productId'])}
+            />
           ))}
         </View>
-      ) : (
-        <View style={styles.container}>
-          <Text>Fetching products please wait...</Text>
-        </View>
-      )}
-    </View>
-  );
-};
+      </View>
+    );
+  } else {
+    return (
+      <View style={styles.container}>
+        <Text>Fetching products please wait...</Text>
+      </View>
+    );
+  }
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'column',
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   repeatContainer: {
     width: '90%',
     alignSelf: 'center',
-    marginBottom: HEIGHT * 0.04,
+    marginBottom: 10,
   },
   title: {
-    fontSize: 15,
-    fontWeight: '600',
-    paddingVertical: 10,
-    color: '#000',
+    fontSize: 22,
+    color: 'red',
+  },
+  content: {
+    fontSize: 16,
+    color: 'green',
+    marginVertical: 8,
   },
 });
-
-export default Subscription;
