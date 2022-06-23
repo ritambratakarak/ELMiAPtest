@@ -1,82 +1,64 @@
 import React, {Component} from 'react';
 import {View, Text, TouchableOpacity, ImageBackground} from 'react-native';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+
 
 const PlanIap = props => {
   return (
     <TouchableOpacity
-      style={{width: '100%', height: '25%'}}
+      style={{width: '100%', height: '30%', marginVertical:15}}
       onPress={props.onPress}>
       <ImageBackground
         source={props.image}
-        resizeMode="contain"
+        resizeMode='stretch'
         style={{flex: 1, justifyContent: 'center', paddingHorizontal: 10}}>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
           <View>
             <Text
               style={{
-                fontSize: 20,
+                fontSize: 16,
                 fontWeight: 'bold',
                 color: props.Color,
-                marginTop: -20,
               }}>
               {props.planName}
             </Text>
 
-            <Text style={{fontSize: 12, color: props.Color, marginTop: 6}}>
+            <Text style={{fontSize: 14, color: props.Color, marginTop: 6}}>
               {props.planDes}
             </Text>
 
             <View
               style={{
-                width: 70,
-                height: 30,
+                width: 80,
+                height: 35,
                 marginTop: 10,
-                backgroundColor: props.Color,
+                backgroundColor: '#EE9949',
                 paddingVertical: 0,
-                borderRadius: 3,
+                borderRadius: 5,
                 flexDirection: 'row',
                 justifyContent: 'center',
                 alignItems: 'center',
               }}>
-              <FontAwesome
+              {/* <FontAwesome
                 name="rupee"
                 color={'#fff'}
                 size={12}
                 style={{marginTop: 0, marginRight: 3}}
-              />
-              <Text style={{color: '#fff', fontSize: 18}}>{props.price}</Text>
+              /> */}
+              <Text style={{color: '#fff', fontSize: 20, fontWeight:'600'}}>{props.price}</Text>
             </View>
           </View>
 
-          <View style={{alignItems: 'center', marginTop: -25}}>
-            <View
-              style={{
-                width: 35,
-                height: 25,
-                backgroundColor: props.Color,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <Text style={{color: '#fff', fontSize: 12, fontWeight: '800'}}>
-                {props.days}
-              </Text>
-              {/* <Text style={{ color:'#fff', fontSize:8, marginTop:-5 }} >{props.dayTitle}</Text> */}
-            </View>
-            <View
-              style={{
-                width: 0,
-                height: 0,
-                borderLeftWidth: 17.5,
-                borderRightWidth: 17.5,
-                borderTopWidth: 35,
-                backgroundColor: 'transparent',
-                borderLeftColor: 'transparent',
-                borderRightColor: 'transparent',
-                borderTopColor: props.Color,
-                marginTop: -1,
-              }}></View>
+        </View>
+        <View style={{alignItems:'flex-end'}}>
+          <View
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            <Text style={{ color:'#000', fontSize:10 }} >{props.dayTitle}</Text>
+            <Text style={{color: '#1B98F5', fontSize: 12, fontWeight: '800'}}>
+              {props.days}
+            </Text>
           </View>
         </View>
       </ImageBackground>

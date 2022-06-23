@@ -10,7 +10,6 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import {HEIGHT, GAP, COLORS, WIDTH, FONT} from '../../Utils/constants';
 import IAP from 'react-native-iap';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PlanIap from '../../Components/PlanIap';
@@ -31,7 +30,7 @@ let img = require('../../Assets/tick.png');
 
 export default function Subscription() {
   const [purchased, setPurchased] = useState(false); //set to true if the user has active subscription
-  const [products, setProducts] = useState({}); //used to store list of products
+  const [products, setProducts] = useState([]); //used to store list of products
   const [productData, setProductData] = useState(''); //product data
   const [buyIsLoading, setBuyIsLoading] = useState(''); //get item lodaing data
   const [purchaseToken, setPurchaseToken] = useState(''); // purchased item token
@@ -55,7 +54,20 @@ export default function Subscription() {
             console.log('error finding items');
           })
           .then(res => {
-            setProducts(res); // set item
+            setProducts([
+              {
+                title:
+                  'Elm monthaly test auto renewable (elm_monthly_test_autorenew_subscription)',
+                originalPrice: 120,
+                productId: 'elm_monthly_test_autorenew_subscription',
+              },
+              {
+                title:
+                  'Elm monthaly test auto renewable (elm_monthly_test_autorenew_subscription)',
+                originalPrice: 120,
+                productId: 'elm_monthly_test_autorenew_subscription',
+              },
+            ]); // set item
           });
         avaliblePurchase();
         IAP.flushFailedPurchasesCachedAsPendingAndroid()
@@ -118,7 +130,7 @@ export default function Subscription() {
       .catch(() => {})
       .then(async res => {
         try {
-          Alert.alert('UseEffect Avalivle Purchase', JSON.stringify(res));
+          // Alert.alert('UseEffect Avalivle Purchase', JSON.stringify(res));
           if (res && res.length > 0) {
             setProductData(res[0].transactionReceipt);
             setPurchaseToken(res[0].purchaseToken);
@@ -126,12 +138,15 @@ export default function Subscription() {
             setPurchased(true);
             await AsyncStorage.setItem(
               'purchaseName',
-              JSON.stringify(res.packageNameAndroid),
+              JSON.stringify(res[0].packageNameAndroid),
             );
+          } else {
+            await AsyncStorage.removeItem('purchaseName');
+            setPurchased(false);
           }
         } catch (err) {
           console.warn(err.code, err.message);
-          Alert.alert(err.message);
+          // Alert.alert(err.message);
         }
       });
   };
@@ -175,38 +190,22 @@ export default function Subscription() {
   const restorePurchase = async () => {
     try {
       avaliblePurchase();
-      IAP.getPurchasedItemsAndroid().then(res => {
-        Alert.alert('Purchased Item', JSON.stringify(res));
-      });
+      IAP.getPurchasedItemsAndroid();
       IAP.refreshPurchaseItemsAndroid();
     } catch (err) {
       Alert.alert(err.message);
     }
   };
 
-  const dateToday = () => {
-    var today = new Date();
-    var dd = String(today.getDate()).padStart(2, '0');
-    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-    var yyyy = today.getFullYear();
-
-    today = dd +'/' + mm ;
-    return today;
-  };
-
   if (purchased) {
     return (
-      <View
-        style={{
-          backgroundColor: '#fff',
-          width: '100%',
-          height: '100%',
-        }}>
+      <View style={styles.container}>
         <ScrollView
           contentContainerStyle={{
             justifyContent: 'center',
             alignItems: 'center',
             alignSelf: 'center',
+            flex: 1,
           }}>
           <Text style={styles.title}>WELCOME TO THE APP!</Text>
           <Text style={styles.content}>You package Id: {productId}</Text>
@@ -228,57 +227,73 @@ export default function Subscription() {
             onPress={restorePurchase}>
             <Text style={styles.title}>Restore Purchase</Text>
           </TouchableOpacity>
-          <View style={{width: '90%', alignSelf: 'center'}}>
-            {products
-              .filter(item => item['productId'] !== productId)
-              .map(p => (
-                <PlanIap
-                  key={p['productId']}
-                  image={require('../../Assets/green.png')}
-                  planName={p['title']}
-                  planDes={'Please Purchase this plan '}
-                  Color={'#000'}
-                  price={p['originalPrice']}
-                  days={dateToday()}
-                  onPress={() => subscriptionPress(p['productId'])}
-                />
-                // <TouchableOpacity
-                //   style={{
-                //     backgroundColor: '#1D458A',
-                //     width: '100%',
-                //     height: 200,
-                //     marginVertical: 15,
-                //     justifyContent: 'center',
-                //     alignItems: 'center',
-                //     borderRadius: 15,
-                //   }}
-                //   key={p['productId']}
-                //   onPress={() => subscriptionPress(p['productId'])}>
-                //   <Text
-                //     style={{
-                //       color: '#fff',
-                //       fontSize: 20,
-                //     }}>{`${p['title']}`}</Text>
-                //   <Text
-                //     style={{
-                //       color: '#fff',
-                //       fontSize: 18,
-                //     }}>{`Price: ${p['originalPrice']}`}</Text>
-                //   <View
-                //     style={{
-                //       backgroundColor: '#fff',
-                //       alignSelf: 'center',
-                //       width: 80,
-                //       height: 40,
-                //       alignItems: 'center',
-                //       borderRadius: 10,
-                //       justifyContent: 'center',
-                //       margin: 10,
-                //     }}>
-                //     <Text style={{fontSize: 18, color: '#000'}}>Buy</Text>
-                //   </View>
-                // </TouchableOpacity>
-              ))}
+          <View
+            style={{
+              width: '90%',
+              alignSelf: 'center',
+              height: '55%',
+              justifyContent: 'space-around',
+            }}>
+            {products.length > 0
+              ? products.map((p, i) => (
+                  <PlanIap
+                    key={p['productId']}
+                    image={
+                      i % 2 == 0
+                        ? require('../../Assets/purple.png')
+                        : require('../../Assets/green.png')
+                    }
+                    planName={p['title']}
+                    planDes={
+                      i == 0
+                        ? 'Please Purchase Monthly this plan'
+                        : 'Please Purchase Yearly this plan'
+                    }
+                    Color={'#000'}
+                    price={p['originalPrice']}
+                    days={i == 0 ? 'One month' : 'One year'}
+                    dayTitle={'This plan for : '}
+                    onPress={() => subscriptionPress(p['productId'])}
+                  />
+                  // .filter(item => item['productId'] !== productId)
+                  // <TouchableOpacity
+                  //   style={{
+                  //     backgroundColor: '#1D458A',
+                  //     width: '100%',
+                  //     height: 200,
+                  //     marginVertical: 15,
+                  //     justifyContent: 'center',
+                  //     alignItems: 'center',
+                  //     borderRadius: 15,
+                  //   }}
+                  //   key={p['productId']}
+                  //   onPress={() => subscriptionPress(p['productId'])}>
+                  //   <Text
+                  //     style={{
+                  //       color: '#fff',
+                  //       fontSize: 20,
+                  //     }}>{`${p['title']}`}</Text>
+                  //   <Text
+                  //     style={{
+                  //       color: '#fff',
+                  //       fontSize: 18,
+                  //     }}>{`Price: ${p['originalPrice']}`}</Text>
+                  //   <View
+                  //     style={{
+                  //       backgroundColor: '#fff',
+                  //       alignSelf: 'center',
+                  //       width: 80,
+                  //       height: 40,
+                  //       alignItems: 'center',
+                  //       borderRadius: 10,
+                  //       justifyContent: 'center',
+                  //       margin: 10,
+                  //     }}>
+                  //     <Text style={{fontSize: 18, color: '#000'}}>Buy</Text>
+                  //   </View>
+                  // </TouchableOpacity>
+                ))
+              : null}
 
             {/* <Text style={styles.content}>You package Id: {productData}</Text> */}
           </View>
@@ -297,15 +312,24 @@ export default function Subscription() {
             subscription grants you access to the entire app
           </Text>
 
-          {products.map(p => (
+          {products.map((p, index) => (
             <PlanIap
               key={p['productId']}
-              image={require('../../Assets/green.png')}
+              image={
+                index % 2 == 0
+                  ? require('../../Assets/purple.png')
+                  : require('../../Assets/green.png')
+              }
               planName={p['title']}
-              planDes={'Please Purchase this plan '}
+              planDes={
+                index == 0
+                  ? 'Please Purchase Monthly this plan'
+                  : 'Please Purchase Yearly this plan'
+              }
               Color={'#000'}
               price={p['originalPrice']}
-              days={"1 months"}
+              days={index == 0 ? 'One month' : 'One year'}
+              dayTitle={'This plan for : '}
               onPress={() => subscriptionPress(p['productId'])}
             />
           ))}
@@ -315,7 +339,7 @@ export default function Subscription() {
   } else {
     return (
       <View style={styles.container}>
-        <Text>Fetching products please wait...</Text>
+        <Text style={{fontSize: 20}}>Fetching products please wait...</Text>
       </View>
     );
   }
