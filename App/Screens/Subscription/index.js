@@ -174,11 +174,24 @@ export default function Subscription() {
 
   const restorePurchase = async () => {
     try {
-      avaliblePurchase()
-      IAP.getPurchasedItemsAndroid()
+      avaliblePurchase();
+      IAP.getPurchasedItemsAndroid().then(res => {
+        Alert.alert('Purchased Item', JSON.stringify(res));
+      });
+      IAP.refreshPurchaseItemsAndroid();
     } catch (err) {
       Alert.alert(err.message);
     }
+  };
+
+  const dateToday = () => {
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+
+    today = dd +'/' + mm ;
+    return today;
   };
 
   if (purchased) {
@@ -219,16 +232,16 @@ export default function Subscription() {
             {products
               .filter(item => item['productId'] !== productId)
               .map(p => (
-                <PlanIap 
-            key={p['productId']}
-            image={p['backImage']}
-            planName={p['title']}
-            planDes={p['description']}
-            Color={p['colors']}
-            price={p['originalPrice']}
-            days={p['days1']}
-            dayTitle={p['dayTitle1']}
-            />
+                <PlanIap
+                  key={p['productId']}
+                  image={require('../../Assets/green.png')}
+                  planName={p['title']}
+                  planDes={'Please Purchase this plan '}
+                  Color={'#000'}
+                  price={p['originalPrice']}
+                  days={dateToday()}
+                  onPress={() => subscriptionPress(p['productId'])}
+                />
                 // <TouchableOpacity
                 //   style={{
                 //     backgroundColor: '#1D458A',
@@ -285,16 +298,15 @@ export default function Subscription() {
           </Text>
 
           {products.map(p => (
-            
-            <PlanIap 
-            key={p['productId']}
-            image={p['backImage']}
-            planName={p['title']}
-            planDes={p['description']}
-            Color={p['colors']}
-            price={p['originalPrice']}
-            days={p['days1']}
-            dayTitle={p['dayTitle1']}
+            <PlanIap
+              key={p['productId']}
+              image={require('../../Assets/green.png')}
+              planName={p['title']}
+              planDes={'Please Purchase this plan '}
+              Color={'#000'}
+              price={p['originalPrice']}
+              days={"1 months"}
+              onPress={() => subscriptionPress(p['productId'])}
             />
           ))}
         </View>
