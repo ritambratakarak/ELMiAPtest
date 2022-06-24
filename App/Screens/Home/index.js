@@ -54,9 +54,8 @@ const Home = props => {
   }, [state]);
 
   const playvideo = async item => {
-    const asyncedata = await AsyncStorage.getItem('purchaseName');
-    console.log(asyncedata);
-    if (asyncedata !== null) {
+    // const asyncedata = await AsyncStorage.getItem('purchaseName');
+    // if (asyncedata !== null) {
       navigation.navigate('Player', {
         url: item.sources[0],
         trackID: item._id,
@@ -64,16 +63,16 @@ const Home = props => {
         subtitle: item.subtitle,
         description: item.description,
       });
-    } else {
-      Alert.alert('', 'if you want to play this video. Please Subscribe!', [
-        {
-          text: 'Cancel',
-          onPress: () => console.log('cancle'),
-          style: 'cancel',
-        },
-        {text: 'Ok', onPress: () => navigation.navigate('Subscription')},
-      ]);
-    }
+    // } else {
+    //   Alert.alert('', 'if you want to play this video. Please Subscribe!', [
+    //     {
+    //       text: 'Cancel',
+    //       onPress: () => console.log('cancle'),
+    //       style: 'cancel',
+    //     },
+    //     {text: 'Ok', onPress: () => navigation.navigate('Subscription')},
+    //   ]);
+    // }
   };
 
   const renderItem = useCallback(

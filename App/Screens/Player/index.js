@@ -21,14 +21,14 @@ import {useFocusEffect, useNavigation, useRoute} from '@react-navigation/core';
 import {useDispatch, useSelector} from 'react-redux';
 import {COLORS, FONT, GAP, HEIGHT, WIDTH} from '../../Utils/constants';
 import Feather from 'react-native-vector-icons/Feather';
-import { videosaction } from '../../Redux/Actions/videoaction';
-
+import {videosaction} from '../../Redux/Actions/videoaction';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Player = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const video = useSelector(state => state.videodata)
+  const video = useSelector(state => state.videodata);
   const videoRef = React.createRef();
   const [state, setState] = useState({
     fullscreen: false,
@@ -40,6 +40,7 @@ const Player = () => {
   const [videoUrl, setvideoUrl] = useState(null);
   const [Id, setId] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [storageData, setStorageData] = useState(null);
 
   const onLoadStart = () => setIsLoading(true);
 
@@ -50,6 +51,7 @@ const Player = () => {
   }, [route]);
 
   useEffect(() => {
+    setData();
     navigation.setOptions({
       headerShown: true,
       headerTransparent: true,
@@ -57,7 +59,7 @@ const Player = () => {
         height: Platform.OS == 'ios' ? HEIGHT * 0.12 : 60,
       },
       headerTitle: null,
-      headerLeft: (props) => (
+      headerLeft: props => (
         <TouchableOpacity
           onPress={() => {
             navigation.goBack();
@@ -73,6 +75,12 @@ const Player = () => {
     });
   }, []);
 
+  const setData = async () => {
+    const storageData = await AsyncStorage.getItem('purchaseName');
+    if (storageData !== null) {
+      setStorageData(storageData);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -98,13 +106,13 @@ const Player = () => {
               minBufferMs: 15000,
               maxBufferMs: 50000,
               bufferForPlaybackMs: 2500,
-              bufferForPlaybackAfterRebufferMs: 5000
+              bufferForPlaybackAfterRebufferMs: 5000,
             }}
-            onBuffer={()=> setIsLoading(true)}
+            onBuffer={() => setIsLoading(true)}
           />
           {state.showControls && (
             <View style={styles.controlOverlay}>
-              {isLoading ? (
+              {storageData == null ? (
                 <View
                   style={{
                     width: WIDTH,
@@ -112,7 +120,20 @@ const Player = () => {
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}>
-                  <ActivityIndicator size={"large"} color="#fff"  />
+                    <Text style={{color:"#fff", fontSize:18, marginBottom:20}}>Please subscribe to the app to see the video.</Text>
+                    <TouchableOpacity style={{borderColor:"#fff", borderRadius:5, borderWidth:2, padding:10}} onPress={()=> navigation.navigate("Subscription")}>
+                      <Text style={{color:"#fff", fontSize:18}}>Subscribe</Text>
+                    </TouchableOpacity>
+                </View>
+              ) : isLoading ? (
+                <View
+                  style={{
+                    width: WIDTH,
+                    height: HEIGHT / 2,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <ActivityIndicator size={'large'} color="#fff" />
                 </View>
               ) : (
                 <>
@@ -148,7 +169,7 @@ const Player = () => {
                     skipBackwards={skipBackward}
                     skipForwards={skipForward}
                   />
-                  
+
                   <ProgressBar
                     currentTime={state.currentTime}
                     duration={state.duration > 0 ? state.duration : 0}
@@ -162,7 +183,7 @@ const Player = () => {
           )}
         </View>
       </TouchableWithoutFeedback>
-      <View style={{paddingVertical:15}}>
+      <View style={{paddingVertical: 15}}>
         <ScrollView>
           <Text
             style={{
@@ -197,7 +218,7 @@ const Player = () => {
   );
 
   function handleFullscreen() {
-    setState((s) => ({...s, fullscreen: !state.fullscreen}));
+    setState(s => ({...s, fullscreen: !state.fullscreen}));
   }
 
   function handlePlayPause() {
@@ -230,7 +251,7 @@ const Player = () => {
     // const time = await AsyncStorage.getItem('currenttime');
     // const currenttime = JSON.parse(time);
     setIsLoading(false);
-    setState((s) => ({
+    setState(s => ({
       ...s,
       duration: data.duration,
       currentTime: data.currentTime,
@@ -239,26 +260,23 @@ const Player = () => {
   }
 
   async function onProgress(data) {
-    setState((s) => ({
+    setState(s => ({
       ...s,
       currentTime: data.currentTime,
     }));
   }
 
   function onEnd() {
-    video.map((item, index)=>{
-      if(item._id == route.params.trackID){
-       item.watched = true
+    video.map((item, index) => {
+      if (item._id == route.params.trackID) {
+        item.watched = true;
       }
-    })
-    dispatch(videosaction(video))
+    });
+    dispatch(videosaction(video));
     videoRef.current.seek(0);
-    console.log("video", video);
+    console.log('video', video);
     setState({...state, play: false});
   }
-
-
-
 
   function showControls() {
     state.showControls

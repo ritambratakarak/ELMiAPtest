@@ -54,20 +54,7 @@ export default function Subscription() {
             console.log('error finding items');
           })
           .then(res => {
-            setProducts([
-              {
-                title:
-                  'Elm monthaly test auto renewable (elm_monthly_test_autorenew_subscription)',
-                originalPrice: 120,
-                productId: 'elm_monthly_test_autorenew_subscription',
-              },
-              {
-                title:
-                  'Elm monthaly test auto renewable (elm_monthly_test_autorenew_subscription)',
-                originalPrice: 120,
-                productId: 'elm_monthly_test_autorenew_subscription',
-              },
-            ]); // set item
+            setProducts(res); // set item
           });
         avaliblePurchase();
         IAP.flushFailedPurchasesCachedAsPendingAndroid()
@@ -208,7 +195,7 @@ export default function Subscription() {
             flex: 1,
           }}>
           <Text style={styles.title}>WELCOME TO THE APP!</Text>
-          <Text style={styles.content}>You package Id: {productId}</Text>
+          {/* <Text style={styles.content}>Your active package Id: {productId}</Text> */}
           <Text style={styles.content}>
             {productId == 'elm_monthly_test_autorenew_subscription'
               ? 'Monthly Subscription is active'
@@ -218,21 +205,36 @@ export default function Subscription() {
               ? 'Yearly Subscription is active'
               : ''}
           </Text>
-          <Image source={img} style={{height: 100, width: 100}} />
-          <TouchableOpacity style={{marginVertical: 10}} onPress={Unsubscribe}>
-            <Text style={styles.title}>Unsubscribe</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{marginVertical: 10}}
-            onPress={restorePurchase}>
-            <Text style={styles.title}>Restore Purchase</Text>
-          </TouchableOpacity>
+          <Image source={img} style={{height: 80, width: 80}} resizeMode='contain' />
+          <View style={{flexDirection:'row', justifyContent:'space-between', width:'80%', justifyContent: 'center',
+                alignItems: 'center',}}>   
+            <TouchableOpacity style={{marginVertical: 10,  
+                backgroundColor: '#EE9949',
+                padding: 10,
+                borderRadius: 5,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginRight:20
+              }} onPress={Unsubscribe}>
+              <Text style={{fontSize:16, color:"#fff"}}>Unsubscribe</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{marginVertical: 10,  
+                backgroundColor: '#1B98F5',
+                padding: 10,
+                borderRadius: 5,
+                justifyContent: 'center',
+                alignItems: 'center',}}
+              onPress={restorePurchase}>
+              <Text style={{fontSize:16, color:"#fff"}}>Restore Purchase</Text>
+            </TouchableOpacity>
+          </View>
           <View
             style={{
               width: '90%',
               alignSelf: 'center',
               height: '55%',
-              justifyContent: 'space-around',
+              justifyContent: 'space-evenly',
             }}>
             {products.length > 0
               ? products.map((p, i) => (
@@ -254,48 +256,10 @@ export default function Subscription() {
                     days={i == 0 ? 'One month' : 'One year'}
                     dayTitle={'This plan for : '}
                     onPress={() => subscriptionPress(p['productId'])}
+                    containerHeight={"50%"}
                   />
-                  // .filter(item => item['productId'] !== productId)
-                  // <TouchableOpacity
-                  //   style={{
-                  //     backgroundColor: '#1D458A',
-                  //     width: '100%',
-                  //     height: 200,
-                  //     marginVertical: 15,
-                  //     justifyContent: 'center',
-                  //     alignItems: 'center',
-                  //     borderRadius: 15,
-                  //   }}
-                  //   key={p['productId']}
-                  //   onPress={() => subscriptionPress(p['productId'])}>
-                  //   <Text
-                  //     style={{
-                  //       color: '#fff',
-                  //       fontSize: 20,
-                  //     }}>{`${p['title']}`}</Text>
-                  //   <Text
-                  //     style={{
-                  //       color: '#fff',
-                  //       fontSize: 18,
-                  //     }}>{`Price: ${p['originalPrice']}`}</Text>
-                  //   <View
-                  //     style={{
-                  //       backgroundColor: '#fff',
-                  //       alignSelf: 'center',
-                  //       width: 80,
-                  //       height: 40,
-                  //       alignItems: 'center',
-                  //       borderRadius: 10,
-                  //       justifyContent: 'center',
-                  //       margin: 10,
-                  //     }}>
-                  //     <Text style={{fontSize: 18, color: '#000'}}>Buy</Text>
-                  //   </View>
-                  // </TouchableOpacity>
                 ))
               : null}
-
-            {/* <Text style={styles.content}>You package Id: {productData}</Text> */}
           </View>
         </ScrollView>
       </View>
@@ -331,6 +295,7 @@ export default function Subscription() {
               days={index == 0 ? 'One month' : 'One year'}
               dayTitle={'This plan for : '}
               onPress={() => subscriptionPress(p['productId'])}
+              containerHeight={"32%"}
             />
           ))}
         </View>

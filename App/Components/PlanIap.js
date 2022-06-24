@@ -5,24 +5,24 @@ import {View, Text, TouchableOpacity, ImageBackground} from 'react-native';
 const PlanIap = props => {
   return (
     <TouchableOpacity
-      style={{width: '100%', height: '30%', marginVertical:15}}
+      style={{width: '100%', height: props.containerHeight, marginVertical:15}}
       onPress={props.onPress}>
       <ImageBackground
         source={props.image}
         resizeMode='stretch'
-        style={{flex: 1, justifyContent: 'center', paddingHorizontal: 10}}>
+        style={{flex: 1, justifyContent: 'center', padding: 15}}>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
           <View>
             <Text
               style={{
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: 'bold',
                 color: props.Color,
               }}>
               {props.planName}
             </Text>
 
-            <Text style={{fontSize: 14, color: props.Color, marginTop: 6}}>
+            <Text style={{fontSize: 13, color: props.Color, marginTop: 6}}>
               {props.planDes}
             </Text>
 
