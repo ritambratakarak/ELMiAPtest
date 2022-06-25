@@ -13,7 +13,7 @@ import {
 import IAP from 'react-native-iap';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PlanIap from '../../Components/PlanIap';
-import {useNavigation, useFocusEffect} from '@react-navigation/native';
+import {useNavigation, useFocusEffect, useRoute} from '@react-navigation/native';
 // Platform select will allow you to use a different array of product ids based on the platform
 const items = Platform.select({
   ios: [],
@@ -36,6 +36,7 @@ export default function Subscription() {
   const [purchaseToken, setPurchaseToken] = useState(''); // purchased item token
   const [productId, setProductId] = useState(''); //purchased item id
   const [Error, setError] = useState(''); // error
+  const route = useRoute()
 
   useFocusEffect(
     useCallback(() => {
@@ -110,7 +111,7 @@ export default function Subscription() {
         IAP.endConnection();
       } catch (error) {}
     };
-  }, []);
+  }, [route]);
 
   const avaliblePurchase = () => {
     IAP.getAvailablePurchases()
@@ -177,7 +178,7 @@ export default function Subscription() {
   const restorePurchase = async () => {
     try {
       avaliblePurchase();
-      IAP.getPurchasedItemsAndroid();
+      // IAP.getPurchasedItemsAndroid();
       IAP.refreshPurchaseItemsAndroid();
     } catch (err) {
       Alert.alert(err.message);

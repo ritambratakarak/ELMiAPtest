@@ -120,7 +120,7 @@ const Player = () => {
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}>
-                    <Text style={{color:"#fff", fontSize:18, marginBottom:20}}>Please subscribe to the app to see the video.</Text>
+                    <Text style={{color:"#fff", fontSize:18, marginBottom:20, width:'80%', textAlign:"center"}}>Please subscribe to the app to see the video.</Text>
                     <TouchableOpacity style={{borderColor:"#fff", borderRadius:5, borderWidth:2, padding:10}} onPress={()=> navigation.navigate("Subscription")}>
                       <Text style={{color:"#fff", fontSize:18}}>Subscribe</Text>
                     </TouchableOpacity>
