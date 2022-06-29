@@ -24,8 +24,8 @@ const items = Platform.select({
   ],
 });
 
-let purchaseUpdateSubscription;
-let purchaseErrorSubscription;
+let purchaseUpdateSubscription = null;
+let purchaseErrorSubscription = null;
 let img = require('../../Assets/tick.png');
 
 export default function Subscription() {
@@ -55,12 +55,32 @@ export default function Subscription() {
             console.log('error finding items');
           })
           .then(res => {
+            Alert.alert("Prpduct Details", JSON.stringify(res));
             setProducts(res); // set item
           });
         avaliblePurchase();
         IAP.flushFailedPurchasesCachedAsPendingAndroid()
           .then(async consumed => {
-            console.log('consumed all items?', consumed);
+            purchaseUpdateSubscription = IAP.purchaseUpdatedListener(async purchase => {
+              const receipt = purchase.transactionReceipt
+                ? purchase.transactionReceipt
+                : purchase.originalJson;
+              if (receipt) {
+                try {
+                  if (Platform.OS === 'ios') {
+                    IAP.finishTransactionIOS(purchase.transactionId);
+                  } else if (Platform.OS === 'android') {
+                    // If consumable (can be purchased again)
+                    await IAP.consumePurchaseAndroid(purchase.purchaseToken);
+                    // If not consumable
+                    await IAP.acknowledgePurchaseAndroid(purchase.purchaseToken);
+                  }
+                  await IAP.finishTransaction(purchase, false);
+                } catch (ackErr) {
+                  console.log('ackErr INAPP>>>>', ackErr);
+                }
+              }
+            });
           })
           .catch(err => {
             console.warn(
@@ -69,24 +89,6 @@ export default function Subscription() {
             );
           });
       });
-    purchaseUpdateSubscription = IAP.purchaseUpdatedListener(async purchase => {
-      const receipt = purchase.transactionReceipt
-        ? purchase.transactionReceipt
-        : purchase.originalJson;
-      if (receipt) {
-        try {
-          if (Platform.OS === 'ios') {
-            IAP.finishTransactionIOS(purchase.transactionId);
-          } else if (Platform.OS === 'android') {
-            await IAP.consumeAllItemsAndroid(purchase.purchaseToken);
-            await IAP.acknowledgePurchaseAndroid(purchase.purchaseToken);
-          }
-          await IAP.finishTransaction(purchase, true);
-        } catch (ackErr) {
-          console.log('ackErr INAPP>>>>', ackErr);
-        }
-      }
-    });
 
     purchaseErrorSubscription = IAP.purchaseErrorListener(error => {
       if (!(error['responseCode'] === '2')) {
@@ -253,7 +255,7 @@ export default function Subscription() {
                         : 'Please Purchase Yearly this plan'
                     }
                     Color={'#000'}
-                    price={p['originalPrice']}
+                    price={p['localizedPrice']}
                     days={i == 0 ? 'One month' : 'One year'}
                     dayTitle={'This plan for : '}
                     onPress={() => subscriptionPress(p['productId'])}
@@ -292,7 +294,7 @@ export default function Subscription() {
                   : 'Please Purchase Yearly this plan'
               }
               Color={'#000'}
-              price={p['originalPrice']}
+              price={p['localizedPrice']}
               days={index == 0 ? 'One month' : 'One year'}
               dayTitle={'This plan for : '}
               onPress={() => subscriptionPress(p['productId'])}
