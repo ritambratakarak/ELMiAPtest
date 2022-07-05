@@ -70,8 +70,6 @@ export default function Subscription() {
                   if (Platform.OS === 'ios') {
                     IAP.finishTransactionIOS(purchase.transactionId);
                   } else if (Platform.OS === 'android') {
-                    // If consumable (can be purchased again)
-                    await IAP.consumePurchaseAndroid(purchase.purchaseToken);
                     // If not consumable
                     await IAP.acknowledgePurchaseAndroid(purchase.purchaseToken);
                   }
