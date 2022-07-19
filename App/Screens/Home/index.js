@@ -28,6 +28,7 @@ const Home = props => {
   const state = useSelector(state => state.videodata);
   const [datatrue, setdatatue] = useState(false);
 
+
   useEffect(() => {
     if (state.length == 0) {
       dispatch(videosaction(media.videos));
@@ -75,23 +76,7 @@ const Home = props => {
     // }
   };
 
-  const renderItem = useCallback(
-    ({item, extraData: data}) => (
-      <HomeList
-        name={item.title}
-        img={item.banner}
-        onLoadStart={() => setcategoryloader(true)}
-        onLoadEnd={() => setcategoryloader(false)}
-        author={item.subtitle}
-        watched={item.watched}
-        onPress={() => {
-          playvideo(item);
-        }}
-      />
-    ),
-    [data],
-  );
-
+  
   return (
     <>
       <View style={styles.container}>
@@ -100,7 +85,19 @@ const Home = props => {
             showsVerticalScrollIndicator={false}
             horizontal={false}
             data={data}
-            renderItem={renderItem}
+            renderItem={({item, extraData: data}) => (
+              <HomeList
+                name={item.title}
+                img={item.banner}
+                onLoadStart={() => setcategoryloader(true)}
+                onLoadEnd={() => setcategoryloader(false)}
+                author={item.subtitle}
+                watched={item.watched}
+                onPress={() => {
+                  playvideo(item);
+                }}
+              />
+            )}
             keyExtractor={item => item._id}
             numColumns={2}
             extraData={data}

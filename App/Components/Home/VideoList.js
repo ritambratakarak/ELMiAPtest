@@ -22,18 +22,9 @@ const HomeList = (props) => (
       marginBottom: 10,
     }}
     onPress={props.onPress}>
-    {/* <Image
-      style={{height: '100%', width: '100%', position: 'relative'}}
-      source={{uri: props.img}}
-      imageStyle={{borderRadius: 10}}
-    /> */}
-    <ProgressiveImage
-      defaultImageSource={require('../../Assets/defaultimg.png')}
-      source={{
-        uri: props.img,
-      }}
-      style={{width: '100%', height: '100%'}}
-      resizeMode="cover"
+    <Image
+      style={{height: 120, width: '100%', borderRadius: 10}}
+      source={{uri:props.img}}
     />
     <View style={{position: 'absolute', top: 0, left: 0}}>
       <View style={{alignItems: 'flex-end', margin: 10}}>
