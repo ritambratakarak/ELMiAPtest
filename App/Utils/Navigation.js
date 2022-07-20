@@ -6,6 +6,8 @@ import {
 } from 'react-native';
 import Home from './../Screens/Home';
 import Player from '../Screens/Player';
+import Login from '../Screens/Login';
+
 import {createStackNavigator, HeaderBackground} from '@react-navigation/stack';
 import {HEIGHT, COLORS, WIDTH, FONT} from './constants';
 import Subscription from '../Screens/Subscription';
@@ -16,6 +18,8 @@ const Stack = createStackNavigator();
 export default Navigation = ({ navigation }) => {
   return (
     <Stack.Navigator>
+            <Stack.Screen name="Login" component={Login} />
+
       <Stack.Screen
         name="Home"
         component={Home}
