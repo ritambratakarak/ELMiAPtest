@@ -7,25 +7,22 @@ import { authorize } from 'react-native-app-auth';
 
 const Login = () => {
     // base config
-// const config = {
-//     issuer: 'https://staging1-accounts.stockedge.com/Account/Login',
-//     clientId: 'elm_client_native',
-//     redirectUrl: 'com.elmiaptest.application:/oauth2callback',
-//     scopes: ['openid', 'profile', 'offline_access'],
-//   };
-
 const config = {
-    issuer: 'https://demo.identityserver.io',
-    clientId: 'native.code',
-    redirectUrl: 'io.identityserver.demo:/oauthredirect',
-    scopes: ['openid', 'profile', 'offline_access']
+    issuer: 'https://staging1-accounts.stockedge.com',
+    clientId: 'elm_client_native',
+    redirectUrl: 'com.elmiaptest.application:/oauth2callback',
+    scopes: ['openid', 'profile', 'email', 'offline_access'],
   };
   
 
     const openLink = async () => {
+        console.log(config)
           // use the client to make the auth request and receive the authState
 try {
-    const result = await authorize(config);
+    const result = await authorize({
+        ...config,
+        connectionTimeoutSeconds: 5,
+      });
     console.log(result)
     // result includes accessToken, accessTokenExpirationDate and refreshToken
   } catch (error) {

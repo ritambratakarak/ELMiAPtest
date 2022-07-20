@@ -26,8 +26,17 @@
           <action android:name="android.intent.action.VIEW" />
           <category android:name="android.intent.category.DEFAULT" />
           <category android:name="android.intent.category.BROWSABLE" />
-          <data android:scheme="com.elmiaptest.application"/>
+          <!-- <data android:scheme="com.elmiaptest.application"/> -->
         </intent-filter>
       </activity>
+      <activity android:name="net.openid.appauth.RedirectUriReceiverActivity">
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+          <data android:scheme="com.elmiaptest.application"/>
+    </intent-filter>
+</activity>
+      
     </application>
 </manifest>
