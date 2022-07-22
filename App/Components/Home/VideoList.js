@@ -23,7 +23,8 @@ const HomeList = (props) => (
     }}
     onPress={props.onPress}>
     <Image
-      style={{height: 120, width: '100%', borderRadius: 10}}
+      style={{height: 100, width: '100%', borderRadius: 10}}
+      resizeMode='cover'
       source={{uri:props.img}}
     />
     <View style={{position: 'absolute', top: 0, left: 0}}>

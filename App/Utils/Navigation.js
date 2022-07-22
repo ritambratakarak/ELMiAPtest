@@ -16,7 +16,7 @@ const Stack = createStackNavigator();
 
 export default Navigation = ({ navigation }) => {
   return (
-    <Stack.Navigator initialRouteName={'Download'}>
+    <Stack.Navigator initialRouteName={'Home'}>
       <Stack.Screen
         name="Home"
         component={Home}

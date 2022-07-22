@@ -40,7 +40,7 @@ const Player = () => {
   const [videoUrl, setvideoUrl] = useState(null);
   const [Id, setId] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [storageData, setStorageData] = useState(null);
+  const [storageData, setStorageData] = useState(true);
 
   const onLoadStart = () => setIsLoading(true);
 
@@ -248,18 +248,21 @@ const Player = () => {
   }
 
   async function onLoadEnd(data) {
-    // const time = await AsyncStorage.getItem('currenttime');
-    // const currenttime = JSON.parse(time);
+    const time = await AsyncStorage.getItem('currenttime');
+    const currenttime = JSON.parse(time);
+    console.log("currenttime", currenttime);
     setIsLoading(false);
+    // videoRef.current.seek(time);
     setState(s => ({
       ...s,
       duration: data.duration,
-      currentTime: data.currentTime,
+      currentTime: currenttime,
     }));
-    // getPlayer(data)
   }
 
   async function onProgress(data) {
+    console.log("", data.currentTime);
+    await AsyncStorage.setItem('currenttime', JSON.stringify(data.currentTime));
     setState(s => ({
       ...s,
       currentTime: data.currentTime,
