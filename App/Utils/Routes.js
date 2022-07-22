@@ -24,7 +24,9 @@ const Routes = () => {
 
   return (
     <NavigationContainer>
-      {user ? <Navigation /> : <AuthStack />}
+      {/* {user ? <Navigation /> : <AuthStack />} */}
+      <Navigation />
+
     </NavigationContainer>
   );
 };

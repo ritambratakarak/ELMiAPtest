@@ -44,11 +44,11 @@ const Player = () => {
 
   const onLoadStart = () => setIsLoading(true);
 
-  useEffect(() => {
-    const url = route.params.url;
-    setvideoUrl(url);
-    setId(route.params.trackID);
-  }, [route]);
+  // useEffect(() => {
+  //   // const url = route.params.url;
+  //   setvideoUrl(url);
+  //   setId(route.params.trackID);
+  // }, [route]);
 
   useEffect(() => {
     setData();
@@ -89,7 +89,7 @@ const Player = () => {
           <Video
             ref={videoRef}
             source={{
-              uri: videoUrl,
+              uri: 'http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8',
             }}
             style={state.fullscreen ? styles.video : styles.fullscreenVideo}
             controls={false}
@@ -100,7 +100,7 @@ const Player = () => {
             onEnd={onEnd}
             paused={!state.play}
             fullscreen={state.fullscreen}
-            audioOnly={route.params.type == 'video' ? false : true}
+            // audioOnly={route.params.type == 'video' ? false : true}
             disableFocus={true}
             bufferConfig={{
               minBufferMs: 15000,
@@ -112,20 +112,22 @@ const Player = () => {
           />
           {state.showControls && (
             <View style={styles.controlOverlay}>
-              {storageData == null ? (
-                <View
-                  style={{
-                    width: WIDTH,
-                    height: HEIGHT / 2,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                    <Text style={{color:"#fff", fontSize:18, marginBottom:20, width:'80%', textAlign:"center"}}>Please subscribe to the app to see the video.</Text>
-                    <TouchableOpacity style={{borderColor:"#fff", borderRadius:5, borderWidth:2, padding:10}} onPress={()=> navigation.navigate("Subscription")}>
-                      <Text style={{color:"#fff", fontSize:18}}>Subscribe</Text>
-                    </TouchableOpacity>
-                </View>
-              ) : isLoading ? (
+              {
+              // storageData == null ? (
+              //   <View
+              //     style={{
+              //       width: WIDTH,
+              //       height: HEIGHT / 2,
+              //       justifyContent: 'center',
+              //       alignItems: 'center',
+              //     }}>
+              //       <Text style={{color:"#fff", fontSize:18, marginBottom:20, width:'80%', textAlign:"center"}}>Please subscribe to the app to see the video.</Text>
+              //       <TouchableOpacity style={{borderColor:"#fff", borderRadius:5, borderWidth:2, padding:10}} onPress={()=> navigation.navigate("Subscription")}>
+              //         <Text style={{color:"#fff", fontSize:18}}>Subscribe</Text>
+              //       </TouchableOpacity>
+              //   </View>
+              // ) : 
+              isLoading ? (
                 <View
                   style={{
                     width: WIDTH,
