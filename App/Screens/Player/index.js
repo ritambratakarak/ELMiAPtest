@@ -243,6 +243,7 @@ const Player = () => {
   }
 
   function onSeek(data) {
+    console.log("seek", Math.floor(data.seekTime));
     videoRef?.current.seek(data.seekTime);
     setState({...state, currentTime: data.seekTime});
   }
@@ -261,8 +262,8 @@ const Player = () => {
   }
 
   async function onProgress(data) {
-    console.log("", data.currentTime);
-    await AsyncStorage.setItem('currenttime', JSON.stringify(data.currentTime));
+    // console.log("", data.currentTime);
+     await AsyncStorage.setItem('currenttime', JSON.stringify(data.currentTime))
     setState(s => ({
       ...s,
       currentTime: data.currentTime,
