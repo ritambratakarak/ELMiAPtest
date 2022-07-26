@@ -23,8 +23,18 @@ import {COLORS, FONT, GAP, HEIGHT, WIDTH} from '../../Utils/constants';
 import Feather from 'react-native-vector-icons/Feather';
 import {videosaction} from '../../Redux/Actions/videoaction';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import RNFetchBlob from 'rn-fetch-blob';
+
 
 const Player = () => {
+
+  var fs=RNFetchBlob.fs
+  var path=RNFetchBlob.fs.dirs.DownloadDir
+  console.log(path)
+  var videocache=path+'/videocache/test.m3u8'
+  console.log('file://' + videocache)
+  // let isDir=await fs.isDir(videocache)
+
   const route = useRoute();
   const navigation = useNavigation();
   const dispatch = useDispatch();
@@ -88,9 +98,11 @@ const Player = () => {
         <View>
           <Video
             ref={videoRef}
-            source={{
-              uri: 'http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8',
-            }}
+            source={{uri:'file://' + videocache, type: 'm3u8'}}
+
+            // source={{
+            //   uri: 'http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8',
+            // }}
             style={state.fullscreen ? styles.video : styles.fullscreenVideo}
             controls={false}
             resizeMode={state.fullscreen ? 'cover' : 'contain'}

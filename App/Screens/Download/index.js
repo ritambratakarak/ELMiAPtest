@@ -120,20 +120,24 @@ const Download = () => {
     }
 
     var url='https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8';
-
+    // var url='http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8'
     let dirs = videocache+'/test.m3u8'
  
     var dirsRes=await downloadVideo(url,dirs)
+    console.log(dirsRes)
     var manifest = await dirsRes.text()
+    console.log(manifest)
 
     //analysis m3u8
     var parser = new Parser();
     parser.push(manifest);
     parser.end();
+    console.log(parser)
+
     var parsedManifest = parser.manifest;
     console.log(parsedManifest)
 
-    var segments=parsedManifest.segments
+    var segments=parsedManifest.playlists
  
     if(segments){
       walk(segments,videocache)
@@ -142,8 +146,11 @@ const Download = () => {
   }
   const walk = async (segments,videocache)=>{
     asyncForEach(segments, async x => {
-      var qianzui='http://video.samuredwonder.com'
-      let dirs = videocache+'/'+x.uri
+      var qianzui='https://bitdash-a.akamaihd.net/content/sintel/hls/'
+      // var qianzui='http://devimages.apple.com/iphone/samples/bipbop/'
+      // let dirs = videocache+'/'+x.uri
+            let dirs = videocache+'/'+x.uri
+
       let url = qianzui+x.uri
       var res = downloadVideo(url,dirs)
     })
@@ -158,6 +165,7 @@ const Download = () => {
   const playVideo = ()=>{
     navigation.navigate('Player')
   }
+
   return (
     <View style={styles.container}>
       <View style={{ alignItems: 'center' }}>
