@@ -253,7 +253,7 @@ const Player = () => {
     const currenttime = JSON.parse(time);
     console.log("currenttime", currenttime);
     setIsLoading(false);
-    // videoRef.current.seek(time);
+    // videoRef.current.seek(Math.floor(currenttime));
     setState(s => ({
       ...s,
       duration: data.duration,

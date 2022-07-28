@@ -10,6 +10,7 @@ import {createStackNavigator, HeaderBackground} from '@react-navigation/stack';
 import {HEIGHT, COLORS, WIDTH, FONT} from './constants';
 import Subscription from '../Screens/Subscription';
 import Download from '../Screens/Download';
+import SecondPlayer from '../Screens/Player/SecondPlayer';
 
 const Stack = createStackNavigator();
 
@@ -31,6 +32,7 @@ export default Navigation = ({ navigation }) => {
         }}
       />
       <Stack.Screen name="Player" component={Player} />
+      <Stack.Screen name="SecondPlayer" component={SecondPlayer} />
       <Stack.Screen name="Download" component={Download} />
       <Stack.Screen name="Subscription" component={Subscription} />
     </Stack.Navigator>
