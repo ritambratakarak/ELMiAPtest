@@ -8,7 +8,7 @@ export const Example = () => {
   return (
     <VideoPlayer
       source={"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"}
-      headerTitle={'Title in full screen mode'}
+      headerTitle={'Title in full screen mode '}
       onTapBack={() => {
         Alert.alert('onTapBack');
       }}
