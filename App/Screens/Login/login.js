@@ -27,6 +27,7 @@ const googleLogin = async () => {
       headers: customHeader,
       body: userInfo.user,
     };
+    console.log(reqBody)
     try {
       let response = await fetch(
         'https://identity.elearnmarkets.in/apiv3/users/gtoken.json'
