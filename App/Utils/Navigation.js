@@ -7,6 +7,8 @@ import {
 import Home from './../Screens/Home';
 import Player from '../Screens/Player';
 import Login from '../Screens/Login';
+import VideoPlayer from '../Screens/VideoPlayer';
+
 
 import {createStackNavigator, HeaderBackground} from '@react-navigation/stack';
 import {HEIGHT, COLORS, WIDTH, FONT} from './constants';
@@ -35,6 +37,8 @@ export default Navigation = ({ navigation }) => {
       />
       <Stack.Screen name="Player" component={Player} />
       <Stack.Screen name="Subscription" component={Subscription} />
+      <Stack.Screen name="VideoPlayer" component={VideoPlayer} />
+
     </Stack.Navigator>
   );
 };

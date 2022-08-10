@@ -5,7 +5,7 @@ import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 import { getDeepLink } from '../../Utils/authHelper'
 import { authorize } from 'react-native-app-auth';
 
-const Login = () => {
+const Login = ({navigation}) => {
   // base config
   const config = {
     issuer: 'https://staging1-accounts.stockedge.com',
@@ -13,6 +13,10 @@ const Login = () => {
     redirectUrl: 'com.elmiaptest.application:/oauth2callback',
     scopes: ['openid', 'profile', 'email', 'offline_access'],
   };
+
+  const playVideo= async () => {
+    navigation.navigate('VideoPlayer')
+  }
 
 
   const openLink = async () => {
@@ -59,6 +63,13 @@ const Login = () => {
       <Button
         onPress={openLink}
         title="Login"
+        color="#841584"
+        accessibilityLabel="Learn more about this purple button"
+      />
+      <View style={{marginVertical:16}}></View>
+      <Button
+        onPress={playVideo}
+        title="Play Video"
         color="#841584"
         accessibilityLabel="Learn more about this purple button"
       />
