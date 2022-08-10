@@ -17,6 +17,27 @@ const googleLogin = async () => {
       const userInfo = await GoogleSignin.signIn();
     //   this.setState({ userInfo });
     console.log('user info',userInfo)
+    const customHeader = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: '',
+    };
+    const reqBody = {
+      method: 'POST',
+      headers: customHeader,
+      body: userInfo.user,
+    };
+    try {
+      let response = await fetch(
+        'https://identity.elearnmarkets.in/apiv3/users/gtoken.json'
+        , reqBody);
+      let responseJsonData = response.json();
+      console.log(response)
+      console.log(responseJsonData)
+      // resolve(responseJsonData)
+    } catch (e) {
+      console.log(e);
+    }
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         // user cancelled the login flow
