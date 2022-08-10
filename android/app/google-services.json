@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "274366648687",
+    "project_id": "socialgg-192ed",
+    "storage_bucket": "socialgg-192ed.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:274366648687:android:b8e1941cedaaf467ded89a",
+        "android_client_info": {
+          "package_name": "com.elmipatest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "274366648687-1hoqn4p1f4hk58tierne4r2sue4v4n7n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.elmipatest",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "274366648687-35u2b1ke7eevg7fv7hkmqo7n6g41q0cr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxcb_gPA9DhOt9_57VZjsOtAkV_VZX5XM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "274366648687-35u2b1ke7eevg7fv7hkmqo7n6g41q0cr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
