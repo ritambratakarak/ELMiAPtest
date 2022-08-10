@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
-
+import { LoginManager, GraphRequest,GraphRequestManager } from "react-native-fbsdk";
 
 // create a component
 const login = () => {
@@ -10,6 +10,31 @@ const login = () => {
 useEffect(()=>{
     GoogleSignin.configure()
 },[]);
+
+const fbLogin=(resCallback)=>{
+LoginManager.logOut();
+return LoginManager.logInWithPermissions(['email','public_profile']).then(
+  result =>{
+    console.log("fb result =====>>>>", result);
+    if(result.declinedPermissions && result.declinedPermissions.includes('email')){
+      resCallback({message:'Email is required'})
+    }
+    if(result.isCancelled){
+      console.log(error)
+    }else{
+      const infoRequest = new GraphRequest(
+        '/me?fields=email,name,phone number,picture,freind',
+        null,
+        resCallback
+      );
+      new GraphRequestManager().addRequest(infoRequest).start()
+    }
+  },
+  function(error){
+    onsolelog("Login with error" + error)
+  }
+) 
+}
 
 const googleLogin = async () => {
     try {
@@ -60,10 +85,16 @@ const googleLogin = async () => {
         <View style={styles.container}>
             <TouchableOpacity 
             onPress={googleLogin}
-            // disabled={isSigninInProgress}
-            style={styles.googleButton} >
+            style={[styles.googleButton,{backgroundColor:'#C7C11A'}]} >
             <Text>Google login</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity 
+            onPress={fbLogin}
+            style={[styles.googleButton,{margin:10,backgroundColor:'#1B98F5'}]} >
+            <Text>Facebook login</Text>
+            </TouchableOpacity>
+            
             
         </View>
     );
@@ -78,7 +109,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     googleButton:{
-        backgroundColor:'#C7C11A',
+        
         paddingHorizontal:20,
         paddingVertical:10,
         borderRadius:5

@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">ElmIpaTest</string>
     <string moduleConfig="true" name="CodePushDeploymentKey">0HL7mhfWuy9PPEMtQTjOMVIQt4dRsH4S7Pwr7</string>
+
+<string name="facebook_app_id">760029435201023</string>
+<string name="fb_login_protocol_scheme">fb760029435201023</string>
+<string name="facebook_client_token">43933c013f49668db4d082780e0500d2</string>
+
+
 </resources>
