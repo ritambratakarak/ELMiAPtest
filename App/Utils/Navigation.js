@@ -10,14 +10,14 @@ import {createStackNavigator, HeaderBackground} from '@react-navigation/stack';
 import {HEIGHT, COLORS, WIDTH, FONT} from './constants';
 import Subscription from '../Screens/Subscription';
 import Download from '../Screens/Download';
-import SecondPlayer from '../Screens/Player/SecondPlayer';
+import Secondplayer from '../Screens/Secondplayer';
 
 const Stack = createStackNavigator();
 
 
 export default Navigation = ({ navigation }) => {
   return (
-    <Stack.Navigator initialRouteName={'Home'}>
+    <Stack.Navigator initialRouteName={'Secondplayer'}>
       <Stack.Screen
         name="Home"
         component={Home}
@@ -32,9 +32,9 @@ export default Navigation = ({ navigation }) => {
         }}
       />
       <Stack.Screen name="Player" component={Player} />
-      <Stack.Screen name="SecondPlayer" component={SecondPlayer} />
       <Stack.Screen name="Download" component={Download} />
       <Stack.Screen name="Subscription" component={Subscription} />
+      <Stack.Screen name="Secondplayer" component={Secondplayer} />
     </Stack.Navigator>
   );
 };
