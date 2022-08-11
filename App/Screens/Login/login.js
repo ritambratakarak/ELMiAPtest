@@ -36,34 +36,59 @@ return LoginManager.logInWithPermissions(['email','public_profile']).then(
 ) 
 }
 
+
 const googleLogin = async () => {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
     //   this.setState({ userInfo });
-    console.log('user info',userInfo)
-    const customHeader = {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      Authorization: '',
-    };
-    const reqBody = {
+    console.log('user info',userInfo);
+   fetch('https://identity.elearnmarkets.in/apiv3/users/gtoken.json', {
       method: 'POST',
-      headers: customHeader,
-      body: userInfo.user,
-    };
-    console.log(reqBody)
-    try {
-      let response = await fetch(
-        'https://identity.elearnmarkets.in/apiv3/users/gtoken.json'
-        , reqBody);
-      let responseJsonData = response.json();
-      console.log(response)
-      console.log(responseJsonData)
-      // resolve(responseJsonData)
-    } catch (e) {
-      console.log(e);
-    }
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(userInfo.user)
+    })
+    .then((response) => response.json())
+    .then((json) => {
+      console.log(json);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+//     let response = await fetch('https://identity.elearnmarkets.in/apiv3/users/gtoken.json', {
+//   method: 'POST',
+//   headers: {
+//     Accept: 'application/json',
+//     'Content-Type': 'application/json'
+//   },
+//   body: JSON.stringify(userInfo.user)
+// });
+// console.log(response)
+    // const customHeader = {
+    //   // Accept: 'application/json',
+    //   // 'Content-Type': 'application/json',
+    //   Authorization: '',
+    // };
+    // const reqBody = {
+    //   method: 'POST',
+    //   headers: customHeader,
+    //   body: userInfo.user,
+    // };
+    // console.log(reqBody)
+    // try {
+    //   let response = await fetch(
+    //     'https://identity.elearnmarkets.in/apiv3/users/gtoken.json'
+    //     , reqBody);
+    //   let responseJsonData = response.json();
+    //   console.log(response)
+    //   console.log(responseJsonData)
+    //   // resolve(responseJsonData)
+    // } catch (e) {
+    //   console.log(e);
+    // }
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         // user cancelled the login flow
