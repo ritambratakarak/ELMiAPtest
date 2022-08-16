@@ -14,6 +14,7 @@ const Secondplayer = () => {
   return (
     <View style={{flex:1}}>
       <Text>good</Text>
+      
     </View>
   );
 };
