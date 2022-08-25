@@ -37,7 +37,7 @@ const Home = props => {
     navigation.setOptions({
       headerRight: () => {
         return (
-          <TouchableOpacity onPress={() => navigation.navigate('Subscription')}>
+          <TouchableOpacity onPress={() => navigation.navigate('Product')}>
             <Text
               style={{
                 color: COLORS.SECONDARY,
@@ -45,7 +45,7 @@ const Home = props => {
                 textTransform: 'uppercase',
                 paddingHorizontal: 15,
               }}>
-              Subscription
+              Product
             </Text>
           </TouchableOpacity>
         );
