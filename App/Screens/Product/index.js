@@ -13,7 +13,11 @@ import {
 import IAP from 'react-native-iap';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PlanIap from '../../Components/PlanIap';
-import {useNavigation, useFocusEffect, useRoute} from '@react-navigation/native';
+import {
+  useNavigation,
+  useFocusEffect,
+  useRoute,
+} from '@react-navigation/native';
 // Platform select will allow you to use a different array of product ids based on the platform
 const items = Platform.select({
   ios: [],
@@ -36,8 +40,7 @@ export default function Product() {
   const [purchaseToken, setPurchaseToken] = useState(''); // purchased item token
   const [productId, setProductId] = useState(''); //purchased item id
   const [Error, setError] = useState(''); // error
-  const route = useRoute()
-
+  const route = useRoute();
 
   useEffect(() => {
     IAP.initConnection() // Init in-aap-purchase connection...
@@ -50,31 +53,32 @@ export default function Product() {
             console.log('error finding items');
           })
           .then(res => {
-            Alert.alert("Product Details", JSON.stringify(res));
+            Alert.alert('Product Details', JSON.stringify(res));
             setProducts(res); // set item
           });
         IAP.flushFailedPurchasesCachedAsPendingAndroid()
           .then(async consumed => {
-            purchaseUpdateSubscription = IAP.purchaseUpdatedListener(async purchase => {
-              const receipt = purchase.transactionReceipt
-                ? purchase.transactionReceipt
-                : purchase.originalJson;
-              if (receipt) {
-                try {
-                  if (Platform.OS === 'ios') {
-                    IAP.finishTransactionIOS(purchase.transactionId);
-                  } else if (Platform.OS === 'android') {
-                    // If consumable (can be purchased again)
-                    await IAP.consumePurchaseAndroid(purchase.purchaseToken);
-                    // If not consumable
-                    await IAP.acknowledgePurchaseAndroid(purchase.purchaseToken);
+            purchaseUpdateSubscription = IAP.purchaseUpdatedListener(
+              async purchase => {
+                const receipt = purchase.transactionReceipt
+                  ? purchase.transactionReceipt
+                  : purchase.originalJson;
+                if (receipt) {
+                  submitPurchasedData(purchase)
+                  try {
+                    if (Platform.OS === 'ios') {
+                      IAP.finishTransactionIOS(purchase.transactionId);
+                    } else if (Platform.OS === 'android') {
+                      // If consumable (can be purchased again)
+                      await IAP.consumePurchaseAndroid(purchase.purchaseToken);
+                    }
+                    await IAP.finishTransaction(purchase, true);
+                  } catch (ackErr) {
+                    console.log('ackErr INAPP>>>>', ackErr);
                   }
-                  await IAP.finishTransaction(purchase, false);
-                } catch (ackErr) {
-                  console.log('ackErr INAPP>>>>', ackErr);
                 }
-              }
-            });
+              },
+            );
           })
           .catch(err => {
             console.warn(
@@ -109,14 +113,34 @@ export default function Product() {
     };
   }, [route]);
 
+  const submitPurchasedData = async (purshasedData) => {
+    await fetch('https://identity.elearnmarkets.in/apiv3/carts/postGooglePayment.json', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        firstParam: purshasedData,
+      })
+    })
+    .then((response) => response.json())
+    .then((json) => {
+      console.log("json response", json);
+      Alert.alert("api response", JSON.stringify(json))
+    })
+    .catch((error) => {
+      throw new Error(error)
+    });
+  };
 
   const subscriptionPress = async sku => {
     setBuyIsLoading(true);
     console.log('IAP req', sku);
     try {
-      await IAP.requestPurchase(sku)
+      await IAP.requestPurchase(sku, false)
         .then(async result => {
-          Alert.alert("Purchased Data", JSON.stringify(result));
+          Alert.alert('Purchased Data', JSON.stringify(result));
           setBuyIsLoading(false);
         })
         .catch(err => {
@@ -132,7 +156,6 @@ export default function Product() {
     }
   };
 
-
   if (products.length > 0) {
     return (
       <View style={styles.container}>
@@ -147,13 +170,13 @@ export default function Product() {
                   : require('../../Assets/green.png')
               }
               planName={p['title']}
-              planDes={""}
+              planDes={''}
               Color={'#000'}
               price={p['localizedPrice']}
-              days={""}
+              days={''}
               dayTitle={'This plan for : '}
               onPress={() => subscriptionPress(p['productId'])}
-              containerHeight={"25%"}
+              containerHeight={'25%'}
             />
           ))}
         </View>
