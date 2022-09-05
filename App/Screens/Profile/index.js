@@ -16,7 +16,6 @@ import {HEIGHT, GAP, COLORS, WIDTH, FONT} from '../../Utils/constants';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {useDispatch, useSelector} from 'react-redux';
 
-
 const Profile = props => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
@@ -26,25 +25,42 @@ const Profile = props => {
   return (
     <>
       <View style={styles.container}>
-        <View style={styles.topCard}>
-          
+        <View style={styles.topCard}></View>
+
+        <View style={{marginLeft: 50, marginTop: -50}}>
+          <Image
+            resizeMode="contain"
+            source={require('../../Assets/default.png')}
+            style={{width: 80, height: 80}}
+          />
+          <Text
+            style={{
+              fontSize: 20,
+              color: 'black',
+              fontWeight: '600',
+              marginTop: 6,
+            }}>
+            Koushal Barick
+          </Text>
+          <Text
+            style={{
+              fontSize: 16,
+              color: '#758283',
+              fontWeight: '600',
+              marginTop: 6,
+            }}>
+            koushal.barick@stockedge.com
+          </Text>
         </View>
 
-<View style={{marginLeft:50, marginTop:-50}} >
-<Image resizeMode='contain'
-source={require('../../Assets/default.png')}
-style={{width: 80, height: 80, }}
-/>
-<Text style={{ fontSize:20, color:'black', fontWeight:'600', marginTop:6 }}  >Koushal Barick</Text>
-<Text style={{ fontSize:16, color:'#758283', fontWeight:'600', marginTop:6 }}  >koushal.barick@stockedge.com</Text>
-</View>
-
-
-<TouchableOpacity style={{ justifyContent:'center', alignSelf:'center', marginTop:20 }} >
-  <Text>Logout</Text>
-</TouchableOpacity>
-
-
+        <TouchableOpacity
+          style={{
+            justifyContent: 'center',
+            alignSelf: 'center',
+            marginTop: 20,
+          }}>
+          <Text>Logout</Text>
+        </TouchableOpacity>
       </View>
     </>
   );
