@@ -7,6 +7,8 @@ import { createStackNavigator, HeaderBackground } from '@react-navigation/stack'
 import { HEIGHT, COLORS, WIDTH, FONT } from './constants';
 const Stack = createStackNavigator();
 import login from '../Screens/Login/login';
+import Profile from '../Screens/Profile';
+
 
 export default Navigation = () => {
   return (
@@ -19,6 +21,10 @@ export default Navigation = () => {
           headerShown: true,
           headerStyle: { height: Platform.OS == "android" ? HEIGHT * 0.08 : HEIGHT * 0.10, elevation: 0, shadowOpacity: 0 },
         }}
+      />
+      <Stack.Screen
+        name="Profile"
+        component={Profile}
       />
       {/* <Stack.Screen
         name="Player"
