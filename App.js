@@ -5,6 +5,7 @@ import Navigation from './App/Utils/Navigation'
 import { Provider } from 'react-redux';
 import reduxStore from './App/Redux/reduxConfig';
 import codePush from "react-native-code-push";
+import Auth from './App/Screens/Auth';
 const codePushOptions = { checkFrequency: codePush.CheckFrequency.ON_APP_START };
 
 
@@ -21,7 +22,7 @@ const App = () => {
   return (
     <Provider store={store}>
       <NavigationContainer>
-        <Navigation />
+        <Auth />
       </NavigationContainer>
     </Provider>
   );
