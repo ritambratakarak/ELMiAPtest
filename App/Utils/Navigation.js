@@ -14,6 +14,10 @@ export default Navigation = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
+        name="Profile"
+        component={Profile}
+      />
+      <Stack.Screen
         name="login"
         component={login}
         options={{
@@ -22,10 +26,7 @@ export default Navigation = () => {
           headerStyle: { height: Platform.OS == "android" ? HEIGHT * 0.08 : HEIGHT * 0.10, elevation: 0, shadowOpacity: 0 },
         }}
       />
-      <Stack.Screen
-        name="Profile"
-        component={Profile}
-      />
+      
       {/* <Stack.Screen
         name="Player"
         component={Player}
