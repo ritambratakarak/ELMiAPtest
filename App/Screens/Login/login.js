@@ -33,7 +33,7 @@ const login = () => {
     });
   };
 
-  const fbLogin = resCallback => {
+  const fbLogin = () => {
     LoginManager.logOut();
     return LoginManager.logInWithPermissions(['email', 'public_profile']).then(
       result => {
@@ -48,7 +48,7 @@ const login = () => {
           console.log(error);
         } else {
           const infoRequest = new GraphRequest(
-            '/me?fields=email,name,phone number,picture,freind',
+            '/me?fields=email,name,picture,freind',
             null,
             resCallback,
           );
