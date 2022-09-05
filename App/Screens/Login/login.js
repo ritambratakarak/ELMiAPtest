@@ -8,8 +8,16 @@ import { LoginManager, GraphRequest,GraphRequestManager } from "react-native-fbs
 const login = () => {
 
 useEffect(()=>{
-    GoogleSignin.configure()
+  _configureGoogleSignIn();
+    // GoogleSignin.configure()
 },[]);
+
+const _configureGoogleSignIn = () => {
+  GoogleSignin.configure({
+    webClientId: '274366648687-35u2b1ke7eevg7fv7hkmqo7n6g41q0cr.apps.googleusercontent.com',
+    offlineAccess: false,
+  });
+};
 
 const fbLogin=(resCallback)=>{
 LoginManager.logOut();
@@ -36,23 +44,50 @@ return LoginManager.logInWithPermissions(['email','public_profile']).then(
 ) 
 }
 
+const resCallback = async (error, result) => {
+  LoginManager.logOut();
+  if (error) {
+  } else {
+    if (
+      result.email == '' ||
+      result.email == null ||
+      result.email == 'null'
+    ) {
+      alert('Email not found');
+    } else {
+      let path = '/users/fbtoken.json';
+      try {
+        setIsLoading(true);
+        await dispatch(
+          userActions.loginNew(path, JSON.stringify(result), 'Facebook'),
+        );
+        setIsLoading(false);
+      } catch (err) {
+        setIsLoading(false);
+      }
+    }
+  }
+};
+
 
 const googleLogin = async () => {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
+      userInfo.provider='Google'
     //   this.setState({ userInfo });
     console.log('user info',userInfo);
-   fetch('https://identity.elearnmarkets.in/apiv3/users/gtoken.json', {
+   fetch('https://identity.elearnmarkets.in/apiv3/users/stockedgetoken.json', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(userInfo.user)
+      body: JSON.stringify(userInfo)
     })
     .then((response) => response.json())
     .then((json) => {
+      console.log('lllljson')
       console.log(json);
     })
     .catch((error) => {
