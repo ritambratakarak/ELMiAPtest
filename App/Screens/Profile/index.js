@@ -15,12 +15,53 @@ import {
 import {HEIGHT, GAP, COLORS, WIDTH, FONT} from '../../Utils/constants';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {useDispatch, useSelector} from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 
 const Profile = props => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const [data, setData] = useState([]);
+  const [data, setData] = useState({});
   const state = useSelector(state => state.videodata);
+
+
+  useEffect(()=>{
+    fetchApi()
+  }, [])
+
+
+  const fetchApi = async () =>{
+    const useInfo = JSON.parse(await AsyncStorage.getItem('userToken'));
+    console.log("", useInfo?.stockedgeToken?.access_token);
+    await fetch(
+      'https://identity.elearnmarkets.in/apiv3/users/stockedgeUserInfo.json',
+      {
+        method: 'POST',
+        // headers: {
+        //   Accept: 'application/json',
+        //   'Content-Type': 'application/json',
+        //   Authorization: ,
+        // },
+        body: JSON.stringify({
+          access_token: useInfo?.stockedgeToken?.access_token
+        }),
+      },
+    )
+    .then(response => response.json())
+    .then((response) => {
+      if(response.success){
+        const {user_info}=response.data
+        setData(user_info)
+      }
+    });
+  }
+
+  const logOut = async () => {
+    await AsyncStorage.removeItem("userToken");
+    await AsyncStorage.clear();
+    navigation.replace("Auth")
+  }
 
   return (
     <>
@@ -40,7 +81,7 @@ const Profile = props => {
               fontWeight: '600',
               marginTop: 6,
             }}>
-            Koushal Barick
+            {data.name}
           </Text>
           <Text
             style={{
@@ -49,18 +90,24 @@ const Profile = props => {
               fontWeight: '600',
               marginTop: 6,
             }}>
-            koushal.barick@stockedge.com
+            {data.email}
           </Text>
         </View>
 
         <TouchableOpacity
-          style={{
-            justifyContent: 'center',
-            alignSelf: 'center',
-            marginTop: 20,
-          }}>
-          <Text>Logout</Text>
-        </TouchableOpacity>
+              style={{marginVertical: 25,  
+                backgroundColor: '#1B98F5',
+                padding: 10,
+                borderRadius: 5,
+                justifyContent: 'center',
+                alignItems: 'center', 
+                width:"50%",
+                alignSelf:"center"
+              }}
+                onPress={()=> logOut()}
+              >
+              <Text style={{fontSize:16, color:"#fff"}}>Logout</Text>
+            </TouchableOpacity>
       </View>
     </>
   );
