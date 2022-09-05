@@ -1,5 +1,5 @@
 //import liraries
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {
   GoogleSignin,
@@ -12,10 +12,13 @@ import {
 } from 'react-native-fbsdk';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import Spinner from 'react-native-loading-spinner-overlay';
+
 
 
 // create a component
 const login = () => {
+  const [loading, setLoading] = useState(false)
   const navigation = useNavigation();
   useEffect(() => {
     _configureGoogleSignIn();
@@ -88,6 +91,8 @@ const login = () => {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
       userInfo.provider = 'Google';
+      setLoading(true);
+
       //   this.setState({ userInfo });
       // console.log('user info',userInfo);
       fetch(
@@ -104,6 +109,8 @@ const login = () => {
         .then(response => response.json())
         .then(async json => {
           if (json.success) {
+            setLoading(false);
+
             const stockedgeToken = json.data;
             console.log("data", stockedgeToken);
             // const token = json.data.stockedgeToken?.access_token;
@@ -115,6 +122,8 @@ const login = () => {
           }
         })
         .catch(error => {
+          setLoading(false);
+
           console.error(error);
         });
       //     let response = await fetch('https://identity.elearnmarkets.in/apiv3/users/gtoken.json', {
@@ -167,6 +176,11 @@ const login = () => {
 
   return (
     <View style={styles.container}>
+      <Spinner
+          visible={loading}
+          textContent={'Loading...'}
+          textStyle={styles.spinnerTextStyle}
+        />
       <TouchableOpacity
         onPress={googleLogin}
         style={[styles.googleButton, {backgroundColor: '#C7C11A'}]}>
@@ -194,6 +208,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 5,
+  },
+  spinnerTextStyle: {
+    color: '#FFF'
   },
 });
 
