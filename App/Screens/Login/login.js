@@ -1,6 +1,6 @@
 //import liraries
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet, TouchableOpacity,Alert} from 'react-native';
 import {
   GoogleSignin,
   statusCodes,
@@ -33,7 +33,7 @@ const login = () => {
     });
   };
 
-  const fbLogin = resCallback => {
+  const fbLogin = (resCallback) => {
     LoginManager.logOut();
     return LoginManager.logInWithPermissions(['email', 'public_profile']).then(
       result => {
@@ -48,7 +48,7 @@ const login = () => {
           console.log(error);
         } else {
           const infoRequest = new GraphRequest(
-            '/me?fields=email,name,phone number,picture,freind',
+            '/me?fields=email,name,picture',
             null,
             resCallback,
           );
@@ -61,30 +61,63 @@ const login = () => {
     );
   };
 
-  const resCallback = async (error, result) => {
-    LoginManager.logOut();
-    if (error) {
-    } else {
-      if (
-        result.email == '' ||
-        result.email == null ||
-        result.email == 'null'
-      ) {
-        alert('Email not found');
-      } else {
-        let path = '/users/fbtoken.json';
-        try {
-          setIsLoading(true);
-          await dispatch(
-            userActions.loginNew(path, JSON.stringify(result), 'Facebook'),
-          );
-          setIsLoading(false);
-        } catch (err) {
-          setIsLoading(false);
-        }
-      }
+  const onFbLogin = async()=>{
+    try {
+      await fbLogin(_resCallback1)
+    } catch (error) {
+      console.log('error raised', error)
     }
-  };
+  }
+
+  const _resCallback1 = async (error, result) => {
+    if(error){
+      console.log('error In', error)
+      return
+    }
+    else{
+      const userData = result;
+      console.log('fb Data ======', userData)
+      // let path = '/users/stockedgetoken.json';
+      //   try {
+      //     setLoading(true);
+      //     await dispatch(
+      //       userActions.loginNew(path, JSON.stringify(result), 'Facebook'),
+      //     );
+          
+      //     setLoading(false);
+      //     console.log(result)
+      //   } catch (error) {
+      //     setLoading(false);
+      //   }
+      
+    }
+  }
+
+  // const _resCallback1 = async (error, result) => {
+  //   LoginManager.logOut();
+  //   if (error) {
+  //     console.log('error In', error)
+  //   } else {
+  //     if (
+  //       result.email == '' ||
+  //       result.email == null ||
+  //       result.email == 'null'
+  //     ) {
+  //       Alert.alert('Email not found');
+  //     } else {
+  //       let path = '/users/fbtoken.json';
+  //       try {
+  //         setLoading(true);
+  //         await dispatch(
+  //           userActions.loginNew(path, JSON.stringify(result), 'Facebook'),
+  //         );
+  //         setLoading(false);
+  //       } catch (error) {
+  //         setLoading(false);
+  //       }
+  //     }
+  //   }
+  // };
 
   const googleLogin = async () => {
     try {
@@ -188,7 +221,7 @@ const login = () => {
       </TouchableOpacity>
 
       <TouchableOpacity
-        onPress={fbLogin}
+        onPress={onFbLogin}
         style={[styles.googleButton, {margin: 10, backgroundColor: '#1B98F5'}]}>
         <Text>Facebook login</Text>
       </TouchableOpacity>
