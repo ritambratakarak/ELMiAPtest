@@ -65,6 +65,7 @@ export default function Product() {
                   : purchase.originalJson;
                 if (receipt) {
                   submitPurchasedData(purchase)
+                  Alert.alert("Purchase Data", JSON.stringify(purchase.purchaseToken))
                   try {
                     if (Platform.OS === 'ios') {
                       IAP.finishTransactionIOS(purchase.transactionId);
