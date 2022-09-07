@@ -6,10 +6,11 @@ import {
   statusCodes,
 } from '@react-native-google-signin/google-signin';
 import {
-  LoginManager,
+  AccessToken,
   GraphRequest,
   GraphRequestManager,
-} from 'react-native-fbsdk';
+  LoginManager,
+} from 'react-native-fbsdk-next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -36,29 +37,55 @@ const login = () => {
   const fbLogin = (resCallback) => {
     LoginManager.logOut();
     return LoginManager.logInWithPermissions(['email', 'public_profile']).then(
-      result => {
-        console.log('fb result =====>>>>', result);
-        if (
-          result.declinedPermissions &&
-          result.declinedPermissions.includes('email')
-        ) {
-          resCallback({message: 'Email is required'});
-        }
+      // result => {
+      //   console.log('fb result =====>>>>', result);
+      //   if (
+      //     result.declinedPermissions &&
+      //     result.declinedPermissions.includes('email')
+      //   ) {
+      //     resCallback({message: 'Email is required'});
+      //   }
+      //   if (result.isCancelled) {
+      //     console.log(error);
+      //   } else {
+      //     const infoRequest = new GraphRequest(
+      //       '/me?fields=email,name,picture',
+      //       null,
+      //       resCallback,
+      //     );
+      //     new GraphRequestManager().addRequest(infoRequest).start();
+      //   }
+      // },
+      // function (error) {
+      //   onsolelog('Login with error' + error);
+      // },
+      (result) => {
         if (result.isCancelled) {
-          console.log(error);
         } else {
-          const infoRequest = new GraphRequest(
-            '/me?fields=email,name,picture',
-            null,
-            resCallback,
-          );
-          new GraphRequestManager().addRequest(infoRequest).start();
+          AccessToken.getCurrentAccessToken().then((data) => {
+            setLoading(false);
+            console.log(data.accessToken)
+            const infoRequest = new GraphRequest(
+              '/me',
+              {
+                accessToken: data.accessToken,
+                parameters: {
+                  fields: {
+                    string:
+                      'id, email, picture.type(large), name, first_name, last_name',
+                  },
+                },
+              },
+              resCallback,
+            );
+            // Execute the graph request created above
+            new GraphRequestManager().addRequest(infoRequest).start();
+          });
         }
       },
-      function (error) {
-        onsolelog('Login with error' + error);
-      },
+      function (error) {},
     );
+    
   };
 
   const onFbLogin = async()=>{
@@ -75,7 +102,7 @@ const login = () => {
       return
     }
     else{
-      const userData = result;
+      const userData = result.AccessToken;
       console.log('fb Data ======', userData)
       // let path = '/users/stockedgetoken.json';
       //   try {
