@@ -64,6 +64,7 @@ const login = () => {
         } else {
           AccessToken.getCurrentAccessToken().then((data) => {
             setLoading(false);
+            console.log(data.accessToken)
             const infoRequest = new GraphRequest(
               '/me',
               {
@@ -101,7 +102,7 @@ const login = () => {
       return
     }
     else{
-      const userData = result;
+      const userData = result.AccessToken;
       console.log('fb Data ======', userData)
       // let path = '/users/stockedgetoken.json';
       //   try {
