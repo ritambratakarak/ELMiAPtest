@@ -11,10 +11,15 @@ import {
 import FormInput from '../../Components/FormInput';
 import FormButton from '../../Components/FormButton';
 import {AuthContext} from '../../Utils/AuthProvider';
+import { NavigationProp } from "@react-navigation/native";
 
-const LoginScreen = ({navigation}) => {
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+interface Props {
+  navigation: NavigationProp<any, any>;
+}
+
+const LoginScreen:React.FC<Props> = ({navigation}) => {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
 
   const {login} = useContext(AuthContext);
 
@@ -24,7 +29,7 @@ const LoginScreen = ({navigation}) => {
 
       <FormInput
         labelValue={email}
-        onChangeText={(userEmail) => setEmail(userEmail)}
+        onChangeText={(userEmail: string) => setEmail(userEmail)}
         placeholderText="Email"
         iconType="user"
         keyboardType="email-address"
@@ -34,7 +39,7 @@ const LoginScreen = ({navigation}) => {
 
       <FormInput
         labelValue={password}
-        onChangeText={(userPassword) => setPassword(userPassword)}
+        onChangeText={(userPassword: string) => setPassword(userPassword)}
         placeholderText="Password"
         iconType="lock"
         secureTextEntry={true}
@@ -47,7 +52,7 @@ const LoginScreen = ({navigation}) => {
 
       <TouchableOpacity
         style={styles.forgotButton}
-        onPress={() => navigation.navigate('Signup')}>
+        onPress={() => navigation?.navigate('Signup')}>
         <Text style={styles.navButtonText}>
           Don't have an acount? Create here
         </Text>

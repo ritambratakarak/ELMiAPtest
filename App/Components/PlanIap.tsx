@@ -1,8 +1,20 @@
 import React, {Component} from 'react';
-import {View, Text, TouchableOpacity, ImageBackground} from 'react-native';
+import {View, Text, TouchableOpacity, ImageBackground, ImageProps} from 'react-native';
 
+interface Props {
+  props: any,
+  containerHeight: string,
+  onPress: ()=> void,
+  image: ImageProps['source'],
+  Color: string,
+  planName: string,
+  planDes: string,
+  price: number,
+  dayTitle: string,
+  days:string
+}
 
-const PlanIap = props => {
+const PlanIap:React.FC<Props> = props => {
   return (
     <TouchableOpacity
       style={{width: '100%', height: props.containerHeight, marginVertical:15}}
