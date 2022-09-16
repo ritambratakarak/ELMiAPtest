@@ -5,7 +5,7 @@ import {View, Text, TouchableOpacity, ImageBackground} from 'react-native';
 const PlanIap = props => {
   return (
     <TouchableOpacity
-      style={{width: '100%', height: props.containerHeight, marginVertical:15}}
+      style={{width: '100%', marginVertical:15}}
       onPress={props.onPress}>
       <ImageBackground
         source={props.image}

@@ -23,8 +23,10 @@ const items = Platform.select({
   ios: [],
   android: [
     'elm_monthly_test_subscription',
+    'elm_monthly_test_subscription200',
     'elm_quarterly_test_subscription',
     'elm_yearly_test_subscription',
+    'elm_monthly_test_subscription400'
   ],
 });
 
@@ -67,13 +69,15 @@ export default function Product() {
                   submitPurchasedData(purchase)
                   Alert.alert("Purchase Data", JSON.stringify(purchase.purchaseToken))
                   try {
-                    if (Platform.OS === 'ios') {
-                      IAP.finishTransactionIOS(purchase.transactionId);
-                    } else if (Platform.OS === 'android') {
-                      // If consumable (can be purchased again)
-                      await IAP.consumePurchaseAndroid(purchase.purchaseToken);
-                    }
-                    await IAP.finishTransaction(purchase, true);
+                    await IAP.finishTransaction(purchase);
+
+                    // if (Platform.OS === 'ios') {
+                    //   IAP.finishTransactionIOS(purchase.transactionId);
+                    // } else if (Platform.OS === 'android') {
+                    //   // If consumable (can be purchased again)
+                    //   await IAP.consumePurchaseAndroid(purchase.purchaseToken);
+                    // }
+                    // await IAP.finishTransaction(purchase, true);
                   } catch (ackErr) {
                     console.log('ackErr INAPP>>>>', ackErr);
                   }
@@ -159,7 +163,7 @@ export default function Product() {
 
   if (products.length > 0) {
     return (
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <View style={styles.repeatContainer}>
           <Text style={styles.title}>Welcome to my app!</Text>
           {products.map((p, index) => (
@@ -177,11 +181,11 @@ export default function Product() {
               days={''}
               dayTitle={'This plan for : '}
               onPress={() => subscriptionPress(p['productId'])}
-              containerHeight={'25%'}
+              // containerHeight={'25%'}
             />
           ))}
         </View>
-      </View>
+      </ScrollView>
     );
   } else {
     return (
@@ -196,8 +200,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
+    // alignItems: 'center',
+    // justifyContent: 'center',
   },
   repeatContainer: {
     width: '90%',
