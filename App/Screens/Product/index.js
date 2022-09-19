@@ -119,14 +119,17 @@ export default function Product() {
   }, [route]);
 
   const submitPurchasedData = async (purshasedData) => {
-    await fetch('https://identity.elearnmarkets.in/apiv3/carts/postGooglePayment.json', {
+    await fetch('https://elearnmarkets.in/staging/Elearnmarkets-v3/apiv3/carts/googlepaysuccess.json', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        firstParam: purshasedData,
+        receipt: purshasedData,
+        item_id:1,
+        item_type:1,
+        purchase_complete:false
       })
     })
     .then((response) => response.json())
