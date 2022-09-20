@@ -26,7 +26,7 @@ const items = Platform.select({
     'elm_monthly_test_subscription200',
     'elm_quarterly_test_subscription',
     'elm_yearly_test_subscription',
-    'elm_monthly_test_subscription400'
+    'elm_monthly_test_subscription400',
   ],
 });
 
@@ -37,10 +37,7 @@ let img = require('../../Assets/tick.png');
 export default function Product() {
   const [purchased, setPurchased] = useState(false); //set to true if the user has active subscription
   const [products, setProducts] = useState([]); //used to store list of products
-  const [productData, setProductData] = useState(''); //product data
-  const [buyIsLoading, setBuyIsLoading] = useState(''); //get item lodaing data
-  const [purchaseToken, setPurchaseToken] = useState(''); // purchased item token
-  const [productId, setProductId] = useState(''); //purchased item id
+  const [buyIsLoading, setBuyIsLoading] = useState(''); //get item loading data
   const [Error, setError] = useState(''); // error
   const route = useRoute();
 
@@ -50,12 +47,12 @@ export default function Product() {
         console.log('error connecting to store...');
       })
       .then(() => {
-        IAP.getProducts(items) // fetch all avalibele product
+        IAP.getProducts(items) // fetch all available product
           .catch(() => {
             console.log('error finding items');
           })
           .then(res => {
-            Alert.alert('Product Details', JSON.stringify(res));
+            // Alert.alert('Product Details', JSON.stringify(res));
             setProducts(res); // set item
           });
         IAP.flushFailedPurchasesCachedAsPendingAndroid()
@@ -66,21 +63,11 @@ export default function Product() {
                   ? purchase.transactionReceipt
                   : purchase.originalJson;
                 if (receipt) {
-                  submitPurchasedData(purchase)
-                  Alert.alert("Purchase Data", JSON.stringify(purchase.purchaseToken))
-                  try {
-                    await IAP.finishTransaction(purchase);
-
-                    // if (Platform.OS === 'ios') {
-                    //   IAP.finishTransactionIOS(purchase.transactionId);
-                    // } else if (Platform.OS === 'android') {
-                    //   // If consumable (can be purchased again)
-                    //   await IAP.consumePurchaseAndroid(purchase.purchaseToken);
-                    // }
-                    // await IAP.finishTransaction(purchase, true);
-                  } catch (ackErr) {
-                    console.log('ackErr INAPP>>>>', ackErr);
-                  }
+                  submitPurchasedData(purchase);
+                  // Alert.alert(
+                  //   'Purchase Data',
+                  //   JSON.stringify(purchase.purchaseToken),
+                  // );
                 }
               },
             );
@@ -119,27 +106,66 @@ export default function Product() {
   }, [route]);
 
   const submitPurchasedData = async (purshasedData) => {
-    await fetch('https://elearnmarkets.in/staging/Elearnmarkets-v3/apiv3/carts/googlepaysuccess.json', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+    await fetch(
+      'https://identity.elearnmarkets.in/apiv3/carts/postGooglePayment.json',
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          receipt: purshasedData,
+          item_id: 1,
+          item_type: 1,
+          purchase_complete: false,
+        }),
       },
-      body: JSON.stringify({
-        receipt: purshasedData,
-        item_id:1,
-        item_type:1,
-        purchase_complete:false
+    )
+      .then(response => response.json())
+      .then(async json => {
+        Alert.alert('first api response', JSON.stringify(json));
+        if (json.success) {
+          try {
+            await IAP.finishTransaction(purshasedData, true);
+          } catch (ackErr) {
+            console.log('ackErr INAPP>>>>', ackErr);
+          }
+          finalPurchase(purshasedData)
+        }else{
+          alert("response failure")
+        }
       })
-    })
-    .then((response) => response.json())
-    .then((json) => {
-      console.log("json response", json);
-      Alert.alert("api response", JSON.stringify(json))
-    })
-    .catch((error) => {
-      throw new Error(error)
-    });
+      .catch(error => {
+        throw new Error(error);
+      });
+  };
+
+  const finalPurchase = async (purshasedData) => {
+    await fetch(
+      'https://identity.elearnmarkets.in/apiv3/carts/postGooglePayment.json',
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          receipt: purshasedData,
+          item_id: 1,
+          item_type: 1,
+          purchase_complete: true,
+        }),
+      },
+    )
+      .then(response => response.json())
+      .then(async json => {
+        console.log('json response', json);
+        Alert.alert('second api response', JSON.stringify(json));
+      })
+      .catch(error => {
+        throw new Error(error);
+      });
   };
 
   const subscriptionPress = async sku => {
@@ -148,7 +174,7 @@ export default function Product() {
     try {
       await IAP.requestPurchase(sku, false)
         .then(async result => {
-          Alert.alert('Purchased Data', JSON.stringify(result));
+          // Alert.alert('Purchased Data', JSON.stringify(result));
           setBuyIsLoading(false);
         })
         .catch(err => {
