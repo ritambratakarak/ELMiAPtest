@@ -129,6 +129,13 @@ export default function Product() {
         if (json.success) {
           Alert.alert('api response', JSON.stringify(++count));
           try {
+            // Tell the store that you have delivered what has been paid for.
+            // Failure to do this will result in the purchase being refunded on Android and
+            // the purchase event will reappear on every relaunch of the app until you succeed
+            // in doing the below. It will also be impossible for the user to purchase consumables
+            // again until you do this.
+            // await IAP.finishTransaction(purshasedData);
+            // If consumable (can be purchased again)
             await IAP.finishTransaction(purshasedData, true);
           } catch (ackErr) {
             console.log('ackErr INAPP>>>>', ackErr);
