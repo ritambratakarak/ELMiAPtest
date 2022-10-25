@@ -2,9 +2,11 @@ import 'react-native-gesture-handler';
 import React,{useEffect} from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import Navigation from './App/Utils/Navigation'
-import { Provider } from 'react-redux';
+// import { Provider } from 'react-redux';
 import reduxStore from './App/Redux/reduxConfig';
 import codePush from "react-native-code-push";
+import { Provider, DefaultTheme, Appbar } from 'react-native-paper';
+
 const codePushOptions = { checkFrequency: codePush.CheckFrequency.ON_APP_START };
 
 const store = reduxStore()
@@ -37,7 +39,7 @@ const App = () => {
   }, []);
 
   return (
-    <Provider store={store}>
+    <Provider>
         <NavigationContainer linking={Linking}>
           <Navigation />
         </NavigationContainer>

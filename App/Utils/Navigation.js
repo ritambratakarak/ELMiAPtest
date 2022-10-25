@@ -8,11 +8,10 @@ import Home from './../Screens/Home';
 import Player from '../Screens/Player';
 import Login from '../Screens/Login';
 import VideoPlayer from '../Screens/VideoPlayer';
-
-
 import {createStackNavigator, HeaderBackground} from '@react-navigation/stack';
 import {HEIGHT, COLORS, WIDTH, FONT} from './constants';
 import Subscription from '../Screens/Subscription';
+import IVSPlayer from '../Screens/IVSPlayer';
 
 const Stack = createStackNavigator();
 
@@ -20,8 +19,9 @@ const Stack = createStackNavigator();
 export default Navigation = ({ navigation }) => {
   return (
     <Stack.Navigator>
-            <Stack.Screen name="Login" component={Login} />
-
+      <Stack.Screen name="IVSPlayer" component={IVSPlayer} />
+      <Stack.Screen name="Login" component={Login} />
+      
       <Stack.Screen
         name="Home"
         component={Home}
