@@ -70,7 +70,6 @@ const RESIZE_MODES: ResizeModeOption[] = [
 export default function PlaygroundExample() {
   const {setOptions} = useNavigation<PlaygroundScreenNavigationProp>();
   const mediaPlayerRef = React.useRef<IVSPlayerRef>(null);
-  const [isModalOpened, setIsModalOpened] = useState(false);
   const [fullScreen, setFullScreen] = useState(false);
   const [isResizedModalOpened, setIsResizeModalOpened] = useState(false);
   const [isQualityModalOpened, setIsQualityModalOpened] = useState(false);
