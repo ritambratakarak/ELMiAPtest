@@ -1,6 +1,6 @@
 export const parseSecondsToString = (seconds: number) => {
     if (seconds === Infinity || Number.isNaN(seconds) || seconds < 0) {
-      return 'live';
+      return 'LIVE';
     }
   
     const date = new Date(0);
