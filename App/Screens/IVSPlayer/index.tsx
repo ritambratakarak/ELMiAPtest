@@ -6,6 +6,7 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import IVSPlayer, {
   IVSPlayerRef,
@@ -101,6 +102,7 @@ export default function PlaygroundExample() {
   const [resizeMode, setResizeMode] = useState<ResizeModeOption | null>(
     RESIZE_MODES[2],
   );
+  const [controlShow, setControlShow] = useState(true);
 
   useAppState({
     onBackground: () => {
@@ -124,11 +126,11 @@ export default function PlaygroundExample() {
       if (width < height) {
         setOrientation(Position.PORTRAIT);
         setOptions({headerShown: true, gestureEnabled: true});
-        setFullScreen(false)
+        setFullScreen(false);
       } else {
         setOrientation(Position.LANDSCAPE);
         setOptions({headerShown: false, gestureEnabled: false});
-        setFullScreen(true)
+        setFullScreen(true);
       }
     },
     [setOptions],
@@ -156,326 +158,338 @@ export default function PlaygroundExample() {
       Orientation.lockToPortrait();
       setOrientation(Position.PORTRAIT);
     }
-    setFullScreen(!fullScreen)
+    setFullScreen(!fullScreen);
+  };
+
+  const showControl = () => {
+    if(duration! > 0)
+    if (controlShow) {
+      setControlShow(false);
+    } else {
+      setControlShow(true);
+    }
   };
 
   return (
-    <View style={orientation === 0 ? styles.container : styles.fullScreen}>
-      <View style={styles.playerContainer}>
-     
-        {buffering && Platform.OS === 'ios' ? (
-          <ActivityIndicator
-            animating={true}
-            size="large"
-            style={styles.loader}
-          />
-        ) : null}
+    <TouchableWithoutFeedback onPress={showControl}>
+      <View style={orientation === 0 ? styles.container : styles.fullScreen}>
+        <View style={styles.playerContainer}>
+          {buffering && Platform.OS === 'ios' ? (
+            <ActivityIndicator
+              animating={true}
+              size="large"
+              style={styles.loader}
+            />
+          ) : null}
 
-        <IVSPlayer
-          key={resizeMode?.value}
-          ref={mediaPlayerRef}
-          paused={paused}
-          resizeMode={resizeMode?.value}
-          muted={muted}
-          autoplay={autoplay}
-          liveLowLatency={liveLowLatency}
-          streamUrl={url}
-          logLevel={logLevel}
-          initialBufferDuration={initialBufferDuration}
-          playbackRate={playbackRate}
-          progressInterval={progressInterval}
-          volume={volume}
-          autoQualityMode={autoQualityMode}
-          quality={manualQuality}
-          autoMaxQuality={autoMaxQuality}
-          breakpoints={breakpoints}
-          onSeek={newPosition => console.log('new position', newPosition)}
-          onPlayerStateChange={state => {
-            if (state === PlayerState.Buffering) {
-              log(`buffering at ${detectedQuality?.name}`);
+          <IVSPlayer
+            key={resizeMode?.value}
+            ref={mediaPlayerRef}
+            paused={paused}
+            resizeMode={resizeMode?.value}
+            muted={muted}
+            autoplay={autoplay}
+            liveLowLatency={liveLowLatency}
+            streamUrl={url}
+            logLevel={logLevel}
+            initialBufferDuration={initialBufferDuration}
+            playbackRate={playbackRate}
+            progressInterval={progressInterval}
+            volume={volume}
+            autoQualityMode={autoQualityMode}
+            quality={manualQuality}
+            autoMaxQuality={autoMaxQuality}
+            breakpoints={breakpoints}
+            onSeek={newPosition => console.log('new position', newPosition)}
+            onPlayerStateChange={state => {
+              if (state === PlayerState.Buffering) {
+                log(`buffering at ${detectedQuality?.name}`);
+              }
+              if (state === PlayerState.Playing || state === PlayerState.Idle) {
+                setBuffering(false);
+              }
+              log(`state changed: ${state}`);
+            }}
+            onDurationChange={duration => {
+              setDuration(duration);
+              log(`duration changed: ${parseSecondsToString(duration || 0)}`);
+            }}
+            onQualityChange={newQuality => {
+              setDetectedQuality(newQuality);
+              log(`quality changed: ${newQuality?.name}`);
+            }}
+            onRebuffering={() => setBuffering(true)}
+            onLoadStart={() => log(`load started`)}
+            onLoad={loadedDuration =>
+              log(
+                `loaded duration changed: ${parseSecondsToString(
+                  loadedDuration || 0,
+                )}`,
+              )
             }
-            if (state === PlayerState.Playing || state === PlayerState.Idle) {
-              setBuffering(false);
+            onLiveLatencyChange={liveLatency =>
+              console.log(`live latency changed: ${liveLatency}`)
             }
-            log(`state changed: ${state}`);
-          }}
-          onDurationChange={duration => {
-            setDuration(duration);
-            log(`duration changed: ${parseSecondsToString(duration || 0)}`);
-          }}
-          onQualityChange={newQuality => {
-            setDetectedQuality(newQuality);
-            log(`quality changed: ${newQuality?.name}`);
-          }}
-          onRebuffering={() => setBuffering(true)}
-          onLoadStart={() => log(`load started`)}
-          onLoad={loadedDuration =>
-            log(
-              `loaded duration changed: ${parseSecondsToString(
-                loadedDuration || 0,
-              )}`,
-            )
-          }
-          onLiveLatencyChange={liveLatency =>
-            console.log(`live latency changed: ${liveLatency}`)
-          }
-          onTextCue={textCue => console.log('text cue', textCue)}
-          onTextMetadataCue={textMetadataCue =>
-            console.log('text metadata cue', textMetadataCue)
-          }
-          onProgress={newPosition => {
-            if (!lockPosition) {
-              setPosition(newPosition);
-              setPositionSlider(newPosition);
+            onTextCue={textCue => console.log('text cue', textCue)}
+            onTextMetadataCue={textMetadataCue =>
+              console.log('text metadata cue', textMetadataCue)
             }
-            console.log(
-              `progress changed: ${parseSecondsToString(
-                position ? position : 0,
-              )}`,
-            );
-          }}
-          onData={data => setQualities(data.qualities)}
-          onVideoStatistics={video => console.log('onVideoStatistics', video)}
-          onError={error => console.log('error', error)}
-          onTimePoint={timePoint => console.log('time point', timePoint)}>
-          {
-            <>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'flex-end',
-                  marginTop: 10,
-                }}>
-                <TouchableOpacity
-                  onPress={() => setMuted(!muted)}
-                  style={styles.dropdownGender}>
-                  {muted ? (
-                    <Feather name="volume-x" size={20} color={'white'} />
-                  ) : (
-                    <Feather name="volume-2" size={20} color={'white'} />
-                  )}
-                </TouchableOpacity>
-                <View style={styles.dropdownGender}>
+            onProgress={newPosition => {
+              if (!lockPosition) {
+                setPosition(newPosition);
+                setPositionSlider(newPosition);
+              }
+              console.log(
+                `progress changed: ${parseSecondsToString(
+                  position ? position : 0,
+                )}`,
+              );
+            }}
+            onData={data => setQualities(data.qualities)}
+            onVideoStatistics={video => console.log('onVideoStatistics', video)}
+            onError={error => console.log('error', error)}
+            onTimePoint={timePoint => console.log('time point', timePoint)}>
+            {controlShow ?
+              <>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    marginTop: 10,
+                  }}>
                   <TouchableOpacity
-                    style={styles.dropdown}
-                    onPress={() => setIsResizeModalOpened(true)}>
-                    {resizeMode?.value == 'aspectFill' ? (
-                      <MaterialIcons
-                        name="crop-square"
-                        size={20}
-                        color={'white'}
-                      />
-                    ) : resizeMode?.value == 'aspectFit' ? (
-                      <MaterialIcons
-                        name="image-aspect-ratio"
-                        size={20}
-                        color={'white'}
-                      />
-                    ) : resizeMode?.value == 'aspectZoom' ? (
-                      <MaterialIcons
-                        name="aspect-ratio"
-                        size={20}
-                        color={'white'}
-                      />
-                    ) : null}
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.dropdownGender}>
-                  <TouchableOpacity
-                    style={styles.dropdown}
-                    onPress={() => setIsQualityModalOpened(true)}>
-                    <Text style={{color: '#fff', fontSize: 16}}>
-                      {manualQuality?.name === undefined
-                        ? 'AUTO'
-                        : manualQuality?.name}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.dropdownGender}>
-                  <TouchableOpacity
-                    style={styles.dropdown}
-                    onPress={() => setIsRateModalOpened(true)}>
-                    <Text style={{color: '#fff', fontSize: 16}}>
-                      RATE {playbackRate}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.dropdownGender}>
-                  <TouchableOpacity onPress={() => handleFullScreen()}>
-                    {!fullScreen ? (
-                      <MaterialIcons
-                        name="fullscreen"
-                        size={20}
-                        color={'white'}
-                      />
+                    onPress={() => setMuted(!muted)}
+                    style={styles.dropdownGender}>
+                    {muted ? (
+                      <Feather name="volume-x" size={20} color={'white'} />
                     ) : (
-                      <MaterialIcons
-                        name="fullscreen-exit"
-                        size={20}
-                        color={'white'}
-                      />
+                      <Feather name="volume-2" size={20} color={'white'} />
                     )}
                   </TouchableOpacity>
-                </View>
-              </View>
-              <View
-                style={{
-                  flex: 0.9,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                <IconButton
-                  testID="playPauseButton"
-                  icon={paused ? 'play' : 'pause'}
-                  size={40}
-                  color="white"
-                  onPress={() => {
-                    setPaused(prev => !prev);
-                  }}
-                  style={styles.playIcon}
-                />
-              </View>
-              <View style={styles.playButtonContainer}>
-                <View style={styles.positionContainer}>
-                  {duration && !Number.isNaN(duration) ? (
-                    <Slider
-                      testID="durationSlider"
-                      disabled={!duration || duration === Infinity}
-                      minimumValue={0}
-                      maximumValue={duration === Infinity ? 100 : duration}
-                      value={duration === Infinity ? 100 : positionSlider}
-                      onValueChange={setPosition}
-                      onSlidingComplete={slidingCompleteHandler}
-                      onTouchStart={() => setLockPosition(true)}
-                      onTouchEnd={() => {
-                        setLockPosition(false);
-                        setPositionSlider(position ?? 0);
-                      }}
-                    />
-                  ) : null}
-                  <View style={styles.durationsContainer}>
-                    {duration && position !== null ? (
-                      <Text style={styles.positionText} testID="videoPosition">
-                        {parseSecondsToString(position ? position : 0)}
+                  <View style={styles.dropdownGender}>
+                    <TouchableOpacity
+                      style={styles.dropdown}
+                      onPress={() => setIsResizeModalOpened(true)}>
+                      {resizeMode?.value == 'aspectFill' ? (
+                        <MaterialIcons
+                          name="crop-square"
+                          size={20}
+                          color={'white'}
+                        />
+                      ) : resizeMode?.value == 'aspectFit' ? (
+                        <MaterialIcons
+                          name="image-aspect-ratio"
+                          size={20}
+                          color={'white'}
+                        />
+                      ) : resizeMode?.value == 'aspectZoom' ? (
+                        <MaterialIcons
+                          name="aspect-ratio"
+                          size={20}
+                          color={'white'}
+                        />
+                      ) : null}
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.dropdownGender}>
+                    <TouchableOpacity
+                      style={styles.dropdown}
+                      onPress={() => setIsQualityModalOpened(true)}>
+                      <Text style={{color: '#fff', fontSize: 16}}>
+                        {manualQuality?.name === undefined
+                          ? 'AUTO'
+                          : manualQuality?.name}
                       </Text>
-                    ) : (
-                      <Text />
-                    )}
-                    {duration ? (
-                      <View
-                        style={{
-                          backgroundColor: 'red',
-                          paddingVertical: 2,
-                          borderRadius: 5,
-                          paddingHorizontal: 5,
-                        }}>
-                        <Text
-                          style={[
-                            styles.positionText,
-                            {fontSize: 14, fontWeight: '600'},
-                          ]}
-                          testID="durationLabel">
-                          {parseSecondsToString(duration)}
-                        </Text>
-                      </View>
-                    ) : null}
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.dropdownGender}>
+                    <TouchableOpacity
+                      style={styles.dropdown}
+                      onPress={() => setIsRateModalOpened(true)}>
+                      <Text style={{color: '#fff', fontSize: 16}}>
+                        RATE {playbackRate}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.dropdownGender}>
+                    <TouchableOpacity onPress={() => handleFullScreen()}>
+                      {!fullScreen ? (
+                        <MaterialIcons
+                          name="fullscreen"
+                          size={20}
+                          color={'white'}
+                        />
+                      ) : (
+                        <MaterialIcons
+                          name="fullscreen-exit"
+                          size={20}
+                          color={'white'}
+                        />
+                      )}
+                    </TouchableOpacity>
                   </View>
                 </View>
+                <View
+                  style={{
+                    flex: 0.9,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <IconButton
+                    testID="playPauseButton"
+                    icon={paused ? 'play' : 'pause'}
+                    size={40}
+                    color="white"
+                    onPress={() => {
+                      setPaused(prev => !prev);
+                    }}
+                    style={styles.playIcon}
+                  />
+                </View>
+                <View style={styles.playButtonContainer}>
+                  <View style={styles.positionContainer}>
+                    {duration && !Number.isNaN(duration) ? (
+                      <Slider
+                        testID="durationSlider"
+                        disabled={!duration || duration === Infinity}
+                        minimumValue={0}
+                        maximumValue={duration === Infinity ? 100 : duration}
+                        value={duration === Infinity ? 100 : positionSlider}
+                        onValueChange={setPosition}
+                        onSlidingComplete={slidingCompleteHandler}
+                        onTouchStart={() => setLockPosition(true)}
+                        onTouchEnd={() => {
+                          setLockPosition(false);
+                          setPositionSlider(position ?? 0);
+                        }}
+                      />
+                    ) : null}
+                    <View style={styles.durationsContainer}>
+                      {duration && position !== null ? (
+                        <Text
+                          style={styles.positionText}
+                          testID="videoPosition">
+                          {parseSecondsToString(position ? position : 0)}
+                        </Text>
+                      ) : (
+                        <Text />
+                      )}
+                      {duration ? (
+                        <View
+                          style={{
+                            backgroundColor: 'red',
+                            paddingVertical: 2,
+                            borderRadius: 5,
+                            paddingHorizontal: 5,
+                          }}>
+                          <Text
+                            style={[
+                              styles.positionText,
+                              {fontSize: 14, fontWeight: '600'},
+                            ]}
+                            testID="durationLabel">
+                            {parseSecondsToString(duration)}
+                          </Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  </View>
+                </View>
+              </> : null
+            }
+          </IVSPlayer>
+        </View>
+        <Portal>
+          {isResizedModalOpened && (
+            <View style={styles.modalContentContainer}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Title>Resize Mode</Title>
+                  <Button
+                    testID="closeIcon"
+                    icon="close"
+                    color="gray"
+                    onPress={() => setIsResizeModalOpened(false)}>
+                    Close
+                  </Button>
+                </View>
+                <View style={styles.settings}>
+                  <SettingsItem label="Resize mode" testID="resizeModePicker">
+                    <OptionPicker
+                      option={resizeMode}
+                      options={RESIZE_MODES}
+                      setOption={mode => {
+                        setResizeMode(mode);
+                        log(`Resize mode changed: ${resizeMode?.value}`);
+                      }}
+                    />
+                  </SettingsItem>
+                </View>
               </View>
-            </>
-          }
-        </IVSPlayer>
+            </View>
+          )}
+          {isQualityModalOpened && (
+            <View style={styles.modalContentContainer}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Title>Quality</Title>
+                  <Button
+                    testID="closeIcon"
+                    icon="close"
+                    color="gray"
+                    onPress={() => setIsQualityModalOpened(false)}>
+                    Close
+                  </Button>
+                </View>
+                <View style={styles.settings}>
+                  <SettingsItem label="Quality" testID="qualitiesPicker">
+                    <OptionPicker
+                      option={manualQuality}
+                      options={qualities}
+                      autoOption
+                      setOption={quality => {
+                        setAutoQualityMode(!quality);
+                        setManualQuality(quality);
+                      }}
+                    />
+                  </SettingsItem>
+                </View>
+              </View>
+            </View>
+          )}
+          {isRateModalOpened && (
+            <View style={styles.modalContentContainer}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Title>Rate</Title>
+                  <Button
+                    testID="closeIcon"
+                    icon="close"
+                    color="gray"
+                    onPress={() => setIsRateModalOpened(false)}>
+                    Close
+                  </Button>
+                </View>
+                <View style={styles.settings}>
+                  <SettingsSliderItem
+                    label={`Playback Rate: ${playbackRate}`}
+                    minimumValue={0.5}
+                    maximumValue={2}
+                    step={0.1}
+                    value={playbackRate || INITIAL_PLAYBACK_RATE}
+                    onValueChange={value =>
+                      setPlaybackRate(Number(value.toFixed(1)))
+                    }
+                    testID="playbackRate"
+                  />
+                </View>
+              </View>
+            </View>
+          )}
+        </Portal>
       </View>
-      <Portal>
-        {isResizedModalOpened && (
-          <View style={styles.modalContentContainer}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Title>Resize Mode</Title>
-                <Button
-                  testID="closeIcon"
-                  icon="close"
-                  color="gray"
-                  onPress={() => setIsResizeModalOpened(false)}>
-                  Close
-                </Button>
-              </View>
-              <View style={styles.settings}>
-                <SettingsItem label="Resize mode" testID="resizeModePicker">
-                  <OptionPicker
-                    option={resizeMode}
-                    options={RESIZE_MODES}
-                    setOption={mode => {
-                      setResizeMode(mode);
-                      log(`Resize mode changed: ${resizeMode?.value}`);
-                    }}
-                  />
-                </SettingsItem>
-              </View>
-            </View>
-          </View>
-        )}
-        {isQualityModalOpened && (
-          <View style={styles.modalContentContainer}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Title>Quality</Title>
-                <Button
-                  testID="closeIcon"
-                  icon="close"
-                  color="gray"
-                  onPress={() => setIsQualityModalOpened(false)}>
-                  Close
-                </Button>
-              </View>
-              <View style={styles.settings}>
-                <SettingsItem label="Quality" testID="qualitiesPicker">
-                  <OptionPicker
-                    option={manualQuality}
-                    options={qualities}
-                    autoOption
-                    setOption={quality => {
-                      setAutoQualityMode(!quality);
-                      setManualQuality(quality);
-                    }}
-                  />
-                </SettingsItem>
-              </View>
-            </View>
-          </View>
-        )}
-        {isRateModalOpened && (
-          <View style={styles.modalContentContainer}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Title>Rate</Title>
-                <Button
-                  testID="closeIcon"
-                  icon="close"
-                  color="gray"
-                  onPress={() => setIsRateModalOpened(false)}>
-                  Close
-                </Button>
-              </View>
-              <View style={styles.settings}>
-                <SettingsSliderItem
-                  label={`Playback Rate: ${playbackRate}`}
-                  minimumValue={0.5}
-                  maximumValue={2}
-                  step={0.1}
-                  value={playbackRate || INITIAL_PLAYBACK_RATE}
-                  onValueChange={value =>
-                    setPlaybackRate(Number(value.toFixed(1)))
-                  }
-                  testID="playbackRate"
-                />
-              </View>
-            </View>
-          </View>
-        )}
-      </Portal>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
