@@ -36,6 +36,7 @@ import OptionPicker from '../../IVScomponents/OptionPicker';
 import useAppState from '../../Utils/useAppState';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import Orientation from 'react-native-orientation-locker';
 
 const INITIAL_PLAYBACK_RATE = 1;
@@ -170,6 +171,7 @@ export default function PlaygroundExample() {
     }
   };
 
+  
   return (
     <TouchableWithoutFeedback onPress={showControl}>
       <View style={orientation === 0 ? styles.container : styles.fullScreen}>
@@ -239,6 +241,11 @@ export default function PlaygroundExample() {
                 setPosition(newPosition);
                 setPositionSlider(newPosition);
               }
+              if(controlShow){
+                setTimeout(()=>{
+                  setControlShow(false)
+                }, 3000)
+              }
               console.log(
                 `progress changed: ${parseSecondsToString(
                   position ? position : 0,
@@ -267,31 +274,33 @@ export default function PlaygroundExample() {
                       <Feather name="volume-2" size={20} color={'white'} />
                     )}
                   </TouchableOpacity>
-                  <View style={styles.dropdownGender}>
-                    <TouchableOpacity
-                      style={styles.dropdown}
-                      onPress={() => setIsResizeModalOpened(true)}>
-                      {resizeMode?.value == 'aspectFill' ? (
-                        <MaterialIcons
-                          name="crop-square"
-                          size={20}
-                          color={'white'}
-                        />
-                      ) : resizeMode?.value == 'aspectFit' ? (
-                        <MaterialIcons
-                          name="image-aspect-ratio"
-                          size={20}
-                          color={'white'}
-                        />
-                      ) : resizeMode?.value == 'aspectZoom' ? (
-                        <MaterialIcons
-                          name="aspect-ratio"
-                          size={20}
-                          color={'white'}
-                        />
-                      ) : null}
-                    </TouchableOpacity>
-                  </View>
+                  {Position.LANDSCAPE &&
+                    <View style={styles.dropdownGender}>
+                      <TouchableOpacity
+                        style={styles.dropdown}
+                        onPress={() => setIsResizeModalOpened(true)}>
+                        {resizeMode?.value == 'aspectFill' ? (
+                          <MaterialIcons
+                            name="crop-square"
+                            size={20}
+                            color={'white'}
+                          />
+                        ) : resizeMode?.value == 'aspectFit' ? (
+                          <MaterialIcons
+                            name="image-aspect-ratio"
+                            size={20}
+                            color={'white'}
+                          />
+                        ) : resizeMode?.value == 'aspectZoom' ? (
+                          <MaterialIcons
+                            name="aspect-ratio"
+                            size={20}
+                            color={'white'}
+                          />
+                        ) : null}
+                      </TouchableOpacity>
+                    </View>
+                  }
                   <View style={styles.dropdownGender}>
                     <TouchableOpacity
                       style={styles.dropdown}
@@ -335,7 +344,16 @@ export default function PlaygroundExample() {
                     flex: 0.9,
                     alignItems: 'center',
                     justifyContent: 'center',
+                    flexDirection:"row"
                   }}>
+                    {/* <TouchableOpacity onPress={skipBackward}>
+                    <Ionicons
+                        name="play-skip-back-circle-outline"
+                        size={50}
+                        color={'white'}
+                        style={{marginRight:10}}
+                    />
+                    </TouchableOpacity> */}
                   <IconButton
                     testID="playPauseButton"
                     icon={paused ? 'play' : 'pause'}
