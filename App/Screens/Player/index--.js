@@ -278,7 +278,6 @@ const Player = () => {
     });
     dispatch(videosaction(video));
     videoRef.current.seek(0);
-    console.log('video', video);
     setState({...state, play: false});
   }
 

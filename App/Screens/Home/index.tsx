@@ -21,13 +21,25 @@ import HomeList from '../../Components/Home/VideoList';
 import {videosaction} from '../../Redux/Actions/videoaction';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Home = props => {
+
+interface Props {
+  _id: number,
+  description: string,
+  sources: Array<string>,
+  subtitle: string,
+  banner: string,
+  title: string,
+  watched: boolean,
+  videodata?: Array<Props>
+}
+
+const Home = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const [data, setData] = useState([]);
-  const state = useSelector(state => state.videodata);
-  const [datatrue, setdatatue] = useState(false);
-
+  const state = useSelector((state: Props) => state.videodata) as Array<Props>;
+  const [category, setcategoryloader] = useState(false);
+  const [data, setData] = useState<any[]>([]);
+  
 
   useEffect(() => {
     if (state.length == 0) {
@@ -54,7 +66,7 @@ const Home = props => {
     });
   }, [state]);
 
-  const playvideo = async item => {
+  const playvideo = async (item: Props) => {
     // const asyncedata = await AsyncStorage.getItem('purchaseName');
     // if (asyncedata !== null) {
       navigation.navigate('Player', {
@@ -85,7 +97,7 @@ const Home = props => {
             showsVerticalScrollIndicator={false}
             horizontal={false}
             data={data}
-            renderItem={({item, extraData: data}) => (
+            renderItem={({item}: {item: Props}) => (
               <HomeList
                 name={item.title}
                 img={item.banner}
@@ -98,7 +110,7 @@ const Home = props => {
                 }}
               />
             )}
-            keyExtractor={item => item._id}
+            keyExtractor={(item: any) => item._id}
             numColumns={2}
             extraData={data}
             ListEmptyComponent={

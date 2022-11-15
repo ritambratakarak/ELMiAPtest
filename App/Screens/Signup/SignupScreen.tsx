@@ -1,13 +1,18 @@
 import React, {useContext, useState} from 'react';
-import {View, Text, TouchableOpacity, Platform, StyleSheet} from 'react-native';
+import {View, Text, TouchableOpacity, Platform, StyleSheet, Alert} from 'react-native';
 import FormInput from '../../Components/FormInput';
 import FormButton from '../../Components/FormButton';
 import {AuthContext} from '../../Utils/AuthProvider';
+import { NavigationProp } from "@react-navigation/native";
 
-const SignupScreen = ({navigation}) => {
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
-  const [confirmPassword, setConfirmPassword] = useState();
+interface Props {
+  navigation: NavigationProp<any, any>;
+}
+
+const SignupScreen:React.FC<Props> = ({navigation}) => {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
 
   const {register} = useContext(AuthContext);
 
@@ -17,7 +22,7 @@ const SignupScreen = ({navigation}) => {
 
       <FormInput
         labelValue={email}
-        onChangeText={(userEmail) => setEmail(userEmail)}
+        onChangeText={(userEmail: string) => setEmail(userEmail)}
         placeholderText="Email"
         iconType="user"
         keyboardType="email-address"
@@ -27,7 +32,7 @@ const SignupScreen = ({navigation}) => {
 
       <FormInput
         labelValue={password}
-        onChangeText={(userPassword) => setPassword(userPassword)}
+        onChangeText={(userPassword: string) => setPassword(userPassword)}
         placeholderText="Password"
         iconType="lock"
         secureTextEntry={true}
@@ -35,7 +40,7 @@ const SignupScreen = ({navigation}) => {
 
       <FormInput
         labelValue={confirmPassword}
-        onChangeText={(userPassword) => setConfirmPassword(userPassword)}
+        onChangeText={(userPassword: string) => setConfirmPassword(userPassword)}
         placeholderText="Confirm Password"
         iconType="lock"
         secureTextEntry={true}
@@ -50,7 +55,7 @@ const SignupScreen = ({navigation}) => {
         <Text style={styles.color_textPrivate}>
           By registering, you confirm that you accept our{' '}
         </Text>
-        <TouchableOpacity onPress={() => alert('Terms Clicked!')}>
+        <TouchableOpacity onPress={() => Alert.alert('Terms Clicked!')}>
           <Text style={[styles.color_textPrivate, {color: '#e88832'}]}>
             Terms of service
           </Text>

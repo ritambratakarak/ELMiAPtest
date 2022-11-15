@@ -15,9 +15,9 @@ import Secondplayer from '../Screens/Secondplayer';
 const Stack = createStackNavigator();
 
 
-export default Navigation = ({ navigation }) => {
+export default Navigation = () => {
   return (
-    <Stack.Navigator initialRouteName={'Secondplayer'}>
+    <Stack.Navigator initialRouteName={'Home'}>
       <Stack.Screen
         name="Home"
         component={Home}
